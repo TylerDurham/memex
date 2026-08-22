@@ -1,0 +1,37 @@
+# Compiled binaries
+/memex
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries and coverage
+*.test
+*.out
+coverage.*
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Dependency directory (pre-modules; kept for safety)
+/vendor/
+
+# Local index/database artifacts
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Environment / secrets
+.env
+.env.*
+
+# Editor and OS cruft
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
