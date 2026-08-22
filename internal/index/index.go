@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/tylersnork/memex/internal/chunker"
-	"github.com/tylersnork/memex/internal/embed"
-	"github.com/tylersnork/memex/internal/store"
-	"github.com/tylersnork/memex/internal/vault"
+	"github.com/TylerDurham/memex/internal/chunker"
+	"github.com/TylerDurham/memex/internal/embed"
+	"github.com/TylerDurham/memex/internal/store"
+	"github.com/TylerDurham/memex/internal/vault"
 )
 
 type Options struct {

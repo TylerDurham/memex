@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/tylersnork/memex/internal/embed"
-	"github.com/tylersnork/memex/internal/index"
-	"github.com/tylersnork/memex/internal/store"
+	"github.com/TylerDurham/memex/internal/embed"
+	"github.com/TylerDurham/memex/internal/index"
+	"github.com/TylerDurham/memex/internal/store"
 )
 
 // Debounce is how long to wait after the last filesystem event before
