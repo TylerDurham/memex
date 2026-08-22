@@ -8,7 +8,7 @@ import (
 
 type searchOptions struct {
 	json      bool
-	config		string
+	config    string
 	directory string
 }
 

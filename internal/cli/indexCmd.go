@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"github.com/spf13/cobra"
 	"fmt"
+	"github.com/spf13/cobra"
 )
 
 type indexOptions struct {
@@ -33,7 +33,7 @@ func newIndexCmd() *cobra.Command {
 }
 
 func runIndex(opts *indexOptions) error {
-		fmt.Printf("%v", opts)
+	fmt.Printf("%v", opts)
 
 	return nil
 }

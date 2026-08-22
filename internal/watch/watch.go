@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fsnotify/fsnotify"
 	"github.com/TylerDurham/memex/internal/embed"
 	"github.com/TylerDurham/memex/internal/index"
 	"github.com/TylerDurham/memex/internal/store"
+	"github.com/fsnotify/fsnotify"
 )
 
 // Debounce is how long to wait after the last filesystem event before

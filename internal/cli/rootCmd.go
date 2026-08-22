@@ -28,16 +28,16 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use: "memex",
+	Use:   "memex",
 	Short: "Simple semantic search.",
-	Long: "Simple semantic search.",
+	Long:  "Simple semantic search.",
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
-	} 
+	}
 }
 
 func init() {
