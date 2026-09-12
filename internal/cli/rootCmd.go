@@ -24,13 +24,24 @@ import (
 	"fmt"
 	"os"
 
+	g "github.com/TylerDurham/memex/internal/globals"
 	"github.com/spf13/cobra"
 )
+
+type globalOptions struct {
+	local     bool
+	directory string
+}
+
+var global = globalOptions{}
 
 var rootCmd = &cobra.Command{
 	Use:   "memex",
 	Short: "Simple semantic search.",
 	Long:  "Simple semantic search.",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		return g.EnsureMemexConfigDir()
+	},
 }
 
 func Execute() {
@@ -41,6 +52,11 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.PersistentFlags().StringVarP(&global.directory, "directory", "d", g.GetConfigDir(), "The working directory.")
+	rootCmd.PersistentFlags().BoolVarP(&global.local, "local", "l", false, "Use a different working directory than MEMEX_CONFIG_DIR")
+
+	rootCmd.AddCommand(newInitCmd())
 	rootCmd.AddCommand(newSearchCmd())
 	rootCmd.AddCommand(newIndexCmd())
 }
+
