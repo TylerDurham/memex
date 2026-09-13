@@ -1,9 +1,10 @@
+// Package globals
 package globals
 
 import "log/slog"
 
 const AppName = "memex"
-const DbName = AppName + "_index.db"
+const DBName = AppName + "_index.db"
 
 type App struct {
 	Logger *slog.Logger
@@ -13,7 +14,7 @@ type App struct {
 func InitApp() (app App, err error) {
 	app.Logger = newLogger()
 
-	cfg, err := newConfig()
+	cfg, err := NewConfig()
 	app.Config = cfg
 	return app, err
 }

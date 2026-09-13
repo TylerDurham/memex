@@ -37,7 +37,7 @@ func newInitCmd(ctx g.App) *cobra.Command {
 			ctx.Logger.Debug("flags: ", "local", opts.local)
 			ctx.Logger.Debug("flags: ", "name", opts.name)
 
-			storePath := filepath.Join(ctx.Config.ConfigDirectory(), opts.name, g.DbName)
+			storePath := filepath.Join(ctx.Config.ConfigDirectory(), opts.name, g.DBName)
 			ctx.Logger.Debug("creating directory", "directory", storePath)
 
 			g.EnsureDirectory(filepath.Dir(storePath))

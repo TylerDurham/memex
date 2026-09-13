@@ -6,26 +6,37 @@ import (
 	"os"
 )
 
+// EnvConfigDir is the environment variable that overrides the default config directory.
+const EnvConfigDir = "MEMEX_CONFIG_DIR"
+
+// ConfigInfo holds the resolved config and log directory paths for the
+// application. Created via NewConfig, which also ensures both directories
+// exist on disk.
 type ConfigInfo struct {
 	configDirectory string
 	logDirectory    string
 }
 
+// ConfigDirectory returns the application's config directory.
 func (c *ConfigInfo) ConfigDirectory() string {
 	return c.configDirectory
 }
 
+// LogDirectory returns the application's log directory.
 func (c *ConfigInfo) LogDirectory() string {
 	return c.logDirectory
 }
 
-func newConfig() (cfg ConfigInfo, err error) {
-	cfgDir := calculateConfigDir()
+// NewConfig creates a new instance of the ConfigInfo struct. Also ensures the config
+// and log directories exist on the local file system. Returns the newly created instance of
+// ConfigInfo and an error if one occurred.
+func NewConfig() (cfg ConfigInfo, err error) {
+	cfgDir := GetConfigDir()
 	if _, err := EnsureDirectory(cfgDir); err != nil {
 		return cfg, err
 	}
 
-	logDir := calculateLogDir() 
+	logDir := GetLogDir()
 	if _, err := EnsureDirectory(logDir); err != nil {
 		return cfg, err
 	}
@@ -36,6 +47,7 @@ func newConfig() (cfg ConfigInfo, err error) {
 	return cfg, nil
 }
 
+// ErrNotADirectory is returned when a path exists but is not a directory.
 var ErrNotADirectory = errors.New("path exists but is not a directory")
 
 // EnsureDirectory ensures that path exists as a directory, creating it (and any
@@ -69,34 +81,12 @@ func EnsureDirectory(path string) (created bool, err error) {
 	return true, nil
 }
 
-// // EnsureMemexConfigDir ensures that the Memex configuration directory exists.
-// // It retrieves the configuration directory using GetConfigDir() and checks if it already exists using os.Stat().
-// // If the directory does not exist, it creates the directory along with any necessary parent directories using os.MkdirAll().
-// // The function logs informational messages about the process using the slog package.
-// func ensureConfigDir() (string, error) {
-// 	app, _ := InitApp()
-// 	log := app.Logger
-// 	hd := GetConfigDir()
-//
-// 	log.Debug("ensuring memex directory", "directory", hd)
-// 	_, err := os.Stat(hd)
-// 	if err != nil {
-//
-// 		log.Debug("memex directory does not exist... creating", "directory", hd)
-// 		err := os.MkdirAll(hd, 0750)
-// 		if err != nil {
-// 			return "", err
-// 		}
-// 	}
-// 	return hd, nil
-// }
-//
 // GetConfigDir returns the configuration directory for Memex.
-// It first checks if the MEMEX_CONFIG_DIR environment variable is set and returns its value if found.
+// It first checks if the EnvConfigDir environment variable is set and returns its value if found.
 // If not, it uses the user's home directory to construct the path in a cross-platform compatible manner (e.g., ~/.config/memex).
-func calculateConfigDir() string {
+func GetConfigDir() string {
 
-	home, ok := os.LookupEnv("MEMEX_CONFIG_DIR")
+	home, ok := os.LookupEnv(EnvConfigDir)
 	if !ok {
 		home, _ = os.UserHomeDir()
 		// TODO: Need to ensure works cross-platform (win, macos, etc.)
@@ -107,8 +97,8 @@ func calculateConfigDir() string {
 	return home
 }
 
-// GetMemexLogDir returns the log directory for Memex.
+// GetLogDir returns the log directory for Memex.
 // It constructs the path by appending "/logs" to the configuration directory obtained from GetConfigDir().
-func calculateLogDir() string {
-	return fmt.Sprintf("%s/logs", calculateConfigDir())
+func GetLogDir() string {
+	return fmt.Sprintf("%s/logs", GetConfigDir())
 }
