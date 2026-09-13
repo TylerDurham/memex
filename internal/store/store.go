@@ -90,6 +90,8 @@ func (s *Store) migrate() error {
 
 		CREATE TABLE IF NOT EXISTS files (
 			file_path     TEXT PRIMARY KEY,
+			applicaton 		TEXT,
+			
 			content_hash  TEXT NOT NULL,
 			mod_time      INTEGER NOT NULL,
 			indexed_at    INTEGER NOT NULL
