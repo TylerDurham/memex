@@ -54,14 +54,17 @@ type Result struct {
 
 func Open(path string) (*Store, error) {
 	db, err := sql.Open("sqlite3", path+"?_journal_mode=WAL")
+
 	if err != nil {
 		return nil, fmt.Errorf("open db: %w", err)
 	}
+
 	// Vault indexing is a single-writer workload; a small pool avoids
 	// SQLITE_BUSY under WAL without needing an explicit mutex.
 	db.SetMaxOpenConns(1)
 
 	s := &Store{db: db}
+
 	if err := s.migrate(); err != nil {
 		db.Close()
 		return nil, err
@@ -90,6 +93,8 @@ func (s *Store) migrate() error {
 
 		CREATE TABLE IF NOT EXISTS files (
 			file_path     TEXT PRIMARY KEY,
+			application   TEXT,
+			uri           TEXT,
 			content_hash  TEXT NOT NULL,
 			mod_time      INTEGER NOT NULL,
 			indexed_at    INTEGER NOT NULL

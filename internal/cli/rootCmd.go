@@ -22,15 +22,31 @@ package cli
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 
+	"github.com/TylerDurham/memex/internal/globals"
 	"github.com/spf13/cobra"
 )
+
+type globalOptions struct {
+	local     bool
+	directory string
+	verbose   bool
+}
+
+var global = globalOptions{}
 
 var rootCmd = &cobra.Command{
 	Use:   "memex",
 	Short: "Simple semantic search.",
 	Long:  "Simple semantic search.",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if global.verbose {
+			globals.LogLevel.Set(slog.LevelDebug)
+		}
+		return nil
+	},
 }
 
 func Execute() {
@@ -41,6 +57,8 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(newSearchCmd())
-	rootCmd.AddCommand(newIndexCmd())
+	rootCmd.PersistentFlags().BoolVarP(&global.verbose, "verbose", "v", false, "Show debug logging.")
+
+	app, _ := globals.InitApp()
+	rootCmd.AddCommand(newInitCmd(app))
 }
