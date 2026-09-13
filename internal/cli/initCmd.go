@@ -3,9 +3,7 @@
 package cli
 
 import (
-	"path/filepath"
-
-	g "github.com/TylerDurham/memex/internal/globals"
+	"github.com/TylerDurham/memex/internal/globals"
 	"github.com/TylerDurham/memex/internal/store"
 	"github.com/spf13/cobra"
 )
@@ -16,7 +14,7 @@ type initOptions struct {
 	name      string
 }
 
-func newInitCmd(app g.App) *cobra.Command {
+func newInitCmd(app globals.App) *cobra.Command {
 
 	var opts = initOptions{}
 
@@ -37,13 +35,7 @@ func newInitCmd(app g.App) *cobra.Command {
 			app.Logger.Debug("flags: ", "local", opts.local)
 			app.Logger.Debug("flags: ", "name", opts.name)
 
-			storePath := filepath.Join(app.Config.ConfigDirectory(), opts.name, g.DBName)
-			app.Logger.Debug("creating directory", "directory", storePath)
-
-			g.EnsureDirectory(filepath.Dir(storePath))
-
-			app.Logger.Debug("opening database", "database", storePath)
-			store, err := store.Open(storePath)
+			store, err := store.Init(app, opts.name)
 
 			if err == nil {
 				store.Close()
