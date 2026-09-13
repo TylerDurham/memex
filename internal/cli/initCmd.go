@@ -16,7 +16,7 @@ type initOptions struct {
 	name      string
 }
 
-func newInitCmd(ctx g.App) *cobra.Command {
+func newInitCmd(app g.App) *cobra.Command {
 
 	var opts = initOptions{}
 
@@ -28,21 +28,21 @@ func newInitCmd(ctx g.App) *cobra.Command {
 		Long:    "Initialize a new memex repo.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			ctx.Logger.Debug("config: ", "ConfigDirectory", ctx.Config.ConfigDirectory())
-			ctx.Logger.Debug("config: ", "LogDirectory", ctx.Config.LogDirectory())
+			app.Logger.Debug("config: ", "ConfigDirectory", app.Config.ConfigDirectory())
+			app.Logger.Debug("config: ", "LogDirectory", app.Config.LogDirectory())
 
 			opts.name = args[0]
 
-			ctx.Logger.Debug("flags: ", "directory", opts.directory)
-			ctx.Logger.Debug("flags: ", "local", opts.local)
-			ctx.Logger.Debug("flags: ", "name", opts.name)
+			app.Logger.Debug("flags: ", "directory", opts.directory)
+			app.Logger.Debug("flags: ", "local", opts.local)
+			app.Logger.Debug("flags: ", "name", opts.name)
 
-			storePath := filepath.Join(ctx.Config.ConfigDirectory(), opts.name, g.DBName)
-			ctx.Logger.Debug("creating directory", "directory", storePath)
+			storePath := filepath.Join(app.Config.ConfigDirectory(), opts.name, g.DBName)
+			app.Logger.Debug("creating directory", "directory", storePath)
 
 			g.EnsureDirectory(filepath.Dir(storePath))
 
-			ctx.Logger.Debug("opening database", "database", storePath)
+			app.Logger.Debug("opening database", "database", storePath)
 			store, err := store.Open(storePath)
 
 			if err == nil {
@@ -57,7 +57,7 @@ func newInitCmd(ctx g.App) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.directory, "directory", "d", ctx.Config.ConfigDirectory(), "The working directory.")
+	cmd.Flags().StringVarP(&opts.directory, "directory", "d", app.Config.ConfigDirectory(), "The working directory.")
 	cmd.Flags().BoolVarP(&opts.local, "local", "l", false, "Use a different working directory than MEMEX_CONFIG_DIR")
 
 	return cmd

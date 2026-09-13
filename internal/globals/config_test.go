@@ -9,7 +9,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Test_Config_GetConfigDir tests the config dir api
+// The *FromEnv tests below call os.Setenv(EnvConfigDir, ...) and never
+// restore the original value, so the override leaks into every test that
+// runs after them. That's safe here only because every assertion computes
+// its "expected" value via GetConfigDir/GetLogDir at test time rather than
+// hardcoding the default — but it does mean Test_Config_GetConfigDir (the
+// one test that assumes no override is set) must keep running before any
+// *FromEnv test.
+
+// Test_Config_GetConfigDir verifies that GetConfigDir falls back to
+// ~/.config/<AppName> when EnvConfigDir is not set.
 func Test_Config_GetConfigDir(t *testing.T) {
 	var (
 		home     string
@@ -27,9 +36,9 @@ func Test_Config_GetConfigDir(t *testing.T) {
 
 }
 
-// Test_Config_GetConfigDirFromEnv test the confi dir api when the
-//
-//	config dir ENV variable is set
+// Test_Config_GetConfigDirFromEnv verifies that GetConfigDir returns the
+// value of EnvConfigDir directly when that environment variable is set,
+// overriding the default ~/.config/<AppName> path.
 func Test_Config_GetConfigDirFromEnv(t *testing.T) {
 
 	var (
@@ -49,16 +58,17 @@ func Test_Config_GetConfigDirFromEnv(t *testing.T) {
 
 }
 
-// Test_Config_GetLogDir tests that the logs directory is within the config directory
+// Test_Config_GetLogDir verifies that GetLogDir returns a "logs"
+// subdirectory of whatever GetConfigDir currently resolves to.
 func Test_Config_GetLogDir(t *testing.T) {
 	var expected = GetConfigDir() + "/logs"
 	var actual = GetLogDir()
 	assert.Equal(t, expected, actual)
 }
 
-// Test_Config_GetLogDir tests that the logs directory is within the config directory when the
-//
-//	config dir ENV is set
+// Test_Config_GetLogDirFromEnv verifies that GetLogDir tracks GetConfigDir
+// when EnvConfigDir is set, i.e. the log dir moves along with the config dir
+// override rather than staying pinned to the default.
 func Test_Config_GetLogDirFromEnv(t *testing.T) {
 
 	var expected, err = os.MkdirTemp("/tmp", "memex-test-*")
@@ -73,7 +83,10 @@ func Test_Config_GetLogDirFromEnv(t *testing.T) {
 
 }
 
-// Test_Config_NewConfig Tests that all config apis "line up" and don't provide conflicting values
+// Test_Config_NewConfig verifies that the ConfigInfo returned by NewConfig
+// reports the same paths GetConfigDir/GetLogDir compute directly, and that
+// the log directory it's responsible for creating actually exists on disk
+// afterward.
 func Test_Config_NewConfig(t *testing.T) {
 	var (
 		cfg      ConfigInfo // ConfigInfo instance
@@ -96,9 +109,9 @@ func Test_Config_NewConfig(t *testing.T) {
 	require.DirExists(t, actual)
 }
 
-// Test_Config_NewConfigFromEnv Tests that all config apis "line up" and don't provide conflicting values when setting the
-//
-//	config dir ENV variable
+// Test_Config_NewConfigFromEnv repeats Test_Config_NewConfig with
+// EnvConfigDir set, confirming NewConfig respects the override end-to-end
+// (both the reported paths and the directory it creates on disk).
 func Test_Config_NewConfigFromEnv(t *testing.T) {
 	var (
 		cfg      ConfigInfo // ConfigInfo instance
