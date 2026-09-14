@@ -26,6 +26,7 @@ func Test_Obsidian_Walk(t *testing.T) {
 	assert.NotNilf(t, docs, "nothing returned")
 	assert .GreaterOrEqual(t, len(docs), 1, "no docs walked")
 	for _, d := range docs {
+		t.Logf("%+v", d)
 		require.FileExists(t, d.AbsPath)
 		s, _ := os.Stat(d.AbsPath)
 		assert.Equal(t, s.Size(), d.Size)
