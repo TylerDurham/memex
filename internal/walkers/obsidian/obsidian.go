@@ -24,7 +24,7 @@ func Walk(path string) (docs []walkers.Document, err error) {
 				RelPath:     filepath.Base(path),
 				Application: "obsidian",
 				Size:        info.Size(),
-				ModTime:     info.ModTime().Local().Unix(),
+				ModTime:     info.ModTime(),
 			}
 
 			docs = append(docs, doc)
