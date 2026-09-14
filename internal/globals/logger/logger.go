@@ -1,4 +1,5 @@
-package globals
+// Package logger
+package logger
 
 import (
 	"log/slog"
@@ -19,6 +20,6 @@ var h = slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
 
 var sl = slog.New(h)
 
-func newLogger() *slog.Logger {
-	return sl
+func Debug(msg string, args ...any) {
+	sl.Debug(msg, args...)
 }

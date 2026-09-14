@@ -3,7 +3,8 @@
 package cli
 
 import (
-	"github.com/TylerDurham/memex/internal/globals"
+	"github.com/TylerDurham/memex/internal/globals/config"
+	"github.com/TylerDurham/memex/internal/globals/logger"
 	"github.com/TylerDurham/memex/internal/store"
 	"github.com/spf13/cobra"
 )
@@ -14,7 +15,7 @@ type initOptions struct {
 	name      string
 }
 
-func newInitCmd(app globals.App) *cobra.Command {
+func newInitCmd() *cobra.Command {
 
 	var opts = initOptions{}
 
@@ -26,16 +27,16 @@ func newInitCmd(app globals.App) *cobra.Command {
 		Long:    "Initialize a new memex repo.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			app.Logger.Debug("config: ", "ConfigDirectory", app.Config.ConfigDirectory())
-			app.Logger.Debug("config: ", "LogDirectory", app.Config.LogDirectory())
+			logger.Debug("config: ", "ConfigDirectory", config.ConfigDir())
+			logger.Debug("config: ", "LogDirectory", config.ConfigDir())
 
 			opts.name = args[0]
 
-			app.Logger.Debug("flags: ", "directory", opts.directory)
-			app.Logger.Debug("flags: ", "local", opts.local)
-			app.Logger.Debug("flags: ", "name", opts.name)
+			logger.Debug("flags: ", "directory", opts.directory)
+			logger.Debug("flags: ", "local", opts.local)
+			logger.Debug("flags: ", "name", opts.name)
 
-			store, err := store.Init(app, opts.name)
+			store, err := store.Init(opts.name)
 
 			if err == nil {
 				store.Close()
@@ -49,7 +50,7 @@ func newInitCmd(app globals.App) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.directory, "directory", "d", app.Config.ConfigDirectory(), "The working directory.")
+	cmd.Flags().StringVarP(&opts.directory, "directory", "d", config.ConfigDir(), "The working directory.")
 	cmd.Flags().BoolVarP(&opts.local, "local", "l", false, "Use a different working directory than MEMEX_CONFIG_DIR")
 
 	return cmd

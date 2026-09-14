@@ -7,6 +7,14 @@
       "request": "launch",
       "program": "${workspaceFolder}/cmd",
       "args": ["init", "test"]
-    }
+    },
+    {
+      "name": "Debug memex test",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}/internal/globals/config"
+    } 
+
   ]
 }

@@ -4,17 +4,11 @@ package globals
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"os"
 )
 
-const AppName = "memex"
-const DBName = AppName + "_index.db"
-
-type App struct {
-	Logger *slog.Logger
-	Config ConfigInfo
-}
+// const AppName = "memex"
+// const DBName = AppName + "_index.db"
 
 // ErrNotADirectory is returned when a path exists but is not a directory.
 var ErrNotADirectory = errors.New("path exists but is not a directory")
@@ -50,10 +44,3 @@ func EnsureDirectory(path string) (created bool, err error) {
 	return true, nil
 }
 
-func InitApp() (app App, err error) {
-	app.Logger = newLogger()
-
-	cfg, err := NewConfig()
-	app.Config = cfg
-	return app, err
-}
