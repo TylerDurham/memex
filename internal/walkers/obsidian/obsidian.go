@@ -26,15 +26,19 @@ func Walk(root string) (docs []walkers.Document, err error) {
 
 		vault := filepath.Base(filepath.Dir(filepath.Dir(path)))
 		rel, _ := filepath.Rel(root, path)
+		properties := walkers.DocumentProperties{
+			"foo": walkers.String("bar"),
+		}
 
 		if !d.IsDir() {
 			info, _ := os.Stat(path)
 			doc := walkers.Document{
 				AbsPath:     path,
-				RelPath:     rel,
 				Application: "obsidian",
-				Size:        info.Size(),
+				Properties:  properties,
 				ModTime:     info.ModTime(),
+				RelPath:     rel,
+				Size:        info.Size(),
 				URI:         formatObsidianURL(vault, rel),
 			}
 
