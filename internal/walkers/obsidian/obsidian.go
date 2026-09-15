@@ -11,6 +11,7 @@ import (
 
 func Walk(root string) (docs []walkers.Document, err error) {
 
+	// Collection of documents
 	docs = []walkers.Document{}
 	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
