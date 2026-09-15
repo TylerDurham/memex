@@ -60,7 +60,7 @@ func ScanFM(sc *bufio.Scanner, doc *walkers.Document) (err error) {
 	return nil
 }
 
-func Prepare(doc *walkers.Document) error {
+func ScanDoc(doc *walkers.Document) error {
 	f, err := os.Open(doc.AbsPath)
 
 	if err != nil {
@@ -82,7 +82,7 @@ func Prepare(doc *walkers.Document) error {
 
 }
 
-func GetDocument(root string, path string, file fs.DirEntry) (walkers.Document, error) {
+func LoadDoc(root string, path string, file fs.DirEntry) (walkers.Document, error) {
 
 	var doc = walkers.Document{}
 
@@ -107,7 +107,7 @@ func GetDocument(root string, path string, file fs.DirEntry) (walkers.Document, 
 	doc.Size = info.Size()
 	doc.URI = FormatObsidianURL(vault, rel)
 
-	Prepare(&doc)
+	ScanDoc(&doc)
 
 	return doc, nil
 }

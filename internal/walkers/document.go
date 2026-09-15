@@ -2,6 +2,8 @@
 package walkers
 
 import (
+	"encoding/json"
+	"fmt"
 	"mime"
 	"path/filepath"
 	"time"
@@ -28,11 +30,22 @@ func GetMimeTypeByExt(ext string) (mimeType string) {
 type DocumentProperties map[string]any
 
 type Document struct {
-	AbsPath     string
-	Application string
-	ModTime     time.Time
-	Properties  DocumentProperties
-	RelPath     string
-	Size        int64
-	URI         string
+	AbsPath     string             `json:"absPath"`
+	Application string             `json:"application"`
+	ModTime     time.Time          `json:"modTime"`
+	Properties  DocumentProperties `json:"properties"`
+	RelPath     string             `json:"relPath"`
+	Size        int64              `json:"size"`
+	URI         string             `json:"uri"`
+}
+
+func (doc *Document) ToJSONString() (string, error) {
+
+	json, err := json.MarshalIndent(doc, "", "	")
+
+	if err != nil {
+		return "", fmt.Errorf("could not serialize to json: %+v", err)
+	}
+
+	return string(json), err
 }
