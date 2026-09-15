@@ -24,34 +24,8 @@ func GetMimeTypeByExt(ext string) (mimeType string) {
 	return mimeType
 }
 
-// DocumentProperty is any primitive or slice-of-primitive that may appear as a
-// map entry: string, int, float64, bool, or a slice of one of those.
-type DocumentProperty interface {
-	isValue()
-}
-
-type (
-	String  string
-	Int     int
-	Float   float64
-	Bool    bool
-	Strings []string
-	Ints    []int
-	Floats  []float64
-	Bools   []bool
-)
-
-func (String) isValue()  {}
-func (Int) isValue()     {}
-func (Float) isValue()   {}
-func (Bool) isValue()    {}
-func (Strings) isValue() {}
-func (Ints) isValue()    {}
-func (Floats) isValue()  {}
-func (Bools) isValue()   {}
-
 // DocumentProperties is a set of named document properties.
-type DocumentProperties map[string]DocumentProperty
+type DocumentProperties map[string]any
 
 type Document struct {
 	AbsPath     string

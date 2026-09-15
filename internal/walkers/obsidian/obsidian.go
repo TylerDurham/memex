@@ -2,19 +2,12 @@
 package obsidian
 
 import (
-	"fmt"
 	"io/fs"
-	"net/url"
-	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/TylerDurham/memex/internal/walkers"
 )
-
-func formatObsidianURL(vault string, path string) string {
-	// obsidian://open?vault=Tech-Kasten&file=development%2Fgo%2FGo%20%60fmt%60%20Formatting%20Verbs
-	return fmt.Sprintf("obsidian://open?vault=%s&file=%s", url.PathEscape(vault), url.PathEscape(path))
-}
 
 func Walk(root string) (docs []walkers.Document, err error) {
 
@@ -24,27 +17,21 @@ func Walk(root string) (docs []walkers.Document, err error) {
 			return err
 		}
 
-		vault := filepath.Base(filepath.Dir(filepath.Dir(path)))
-		rel, _ := filepath.Rel(root, path)
-		properties := walkers.DocumentProperties{
-			"foo": walkers.String("bar"),
+		if d.IsDir() {
+			return nil
 		}
 
-		if !d.IsDir() {
-			info, _ := os.Stat(path)
-			doc := walkers.Document{
-				AbsPath:     path,
-				Application: "obsidian",
-				Properties:  properties,
-				ModTime:     info.ModTime(),
-				RelPath:     rel,
-				Size:        info.Size(),
-				URI:         formatObsidianURL(vault, rel),
-			}
-
-			docs = append(docs, doc)
+		if !strings.EqualFold(filepath.Ext(path), ".md") {
+			return nil
 		}
-		return err
+
+		doc, err := GetDocument(root, path, d)
+		if err != nil {
+			return err
+		}
+
+		docs = append(docs, doc)
+		return nil
 	})
 
 	if err != nil {

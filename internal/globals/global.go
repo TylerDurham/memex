@@ -13,6 +13,9 @@ import (
 // ErrNotADirectory is returned when a path exists but is not a directory.
 var ErrNotADirectory = errors.New("path exists but is not a directory")
 
+// ErrNotAFile is returned when a path exists but is not a file.
+var ErrNotAFile = errors.New("path exists but is not a file")
+
 // EnsureDirectory ensures that path exists as a directory, creating it (and any
 // necessary parents) with permissions 0750 if it does not already exist.
 //
