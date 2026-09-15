@@ -13,20 +13,23 @@ func Walk(root string) (docs []walkers.Document, err error) {
 
 	// Collection of documents
 	docs = []walkers.Document{}
+
 	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 
+		// process files only
 		if d.IsDir() {
 			return nil
 		}
 
+		// process markdown files only
 		if !strings.EqualFold(filepath.Ext(path), ".md") {
 			return nil
 		}
 
-		doc, err := GetDocument(root, path, d)
+		doc, err := LoadDoc(root, path, d)
 		if err != nil {
 			return err
 		}

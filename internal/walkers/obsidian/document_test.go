@@ -1,0 +1,62 @@
+package obsidian
+
+import (
+	"io/fs"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func getDirEntry(path string) os.DirEntry {
+	info, _ := os.Stat(path)
+	return fs.FileInfoToDirEntry(info)
+}
+
+func Test_Obsidisan_Document_LoadDoc(t *testing.T) {
+	root := getWD()
+	docPath := filepath.Join(root, "/testdata/tests/Test_Obsidisan_Document_ScanFM.md")
+	dir := getDirEntry(docPath)
+
+	doc, err := LoadDoc(root, docPath, dir)
+
+	if err != nil {
+		t.Fatalf("could not walk %q: %+v", docPath, err)
+	}
+
+	json, err := doc.ToJSONString()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Logf("\n%s", json)
+
+}
+
+func Test_Obsidisan_Document_Serialize(t *testing.T) {
+	root := getWD()
+	docs := filepath.Join(root, "/testdata/tests")
+	filepath.WalkDir(docs, func(path string, d fs.DirEntry, err error) error {
+
+		if d.IsDir() {
+			return nil
+		}
+
+		doc, err := LoadDoc(root, path, d)
+
+		assert.Nilf(t, err, "error laoding doc: %q: %+v", d.Name(), err)
+		assert.NotNilf(t, doc, "should not be nill: $q", d.Name())
+
+		json, err := doc.ToJSONString()
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		t.Logf("\n%s", json)
+
+		return nil
+	})
+}
