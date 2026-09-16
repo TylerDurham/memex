@@ -21,7 +21,7 @@ func FormatObsidianURL(vault string, path string) string {
 	return fmt.Sprintf("obsidian://open?vault=%s&file=%s", url.PathEscape(vault), url.PathEscape(path))
 }
 
-func Chunk(scanner *bufio.Scanner) (properties walkers.DocumentProperties, err error) {
+func Chunk(scanner *bufio.Scanner) (properties walkers.Properties, err error) {
 	return properties, nil
 }
 
@@ -95,13 +95,14 @@ func LoadDoc(root string, path string, file fs.DirEntry) (walkers.Document, erro
 	if err != nil {
 		return doc, err
 	}
-	info, err := os.Stat(path)
+
+	doc.AbsPath = path
+	doc.Application = "obsidian"
+	info, err := file.Info()
 	if err != nil {
 		return doc, err
 	}
 
-	doc.AbsPath = path
-	doc.Application = "obsidian"
 	doc.ModTime = info.ModTime()
 	doc.RelPath = rel
 	doc.Size = info.Size()

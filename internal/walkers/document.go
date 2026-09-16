@@ -4,6 +4,7 @@ package walkers
 import (
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"mime"
 	"path/filepath"
 	"time"
@@ -26,14 +27,19 @@ func GetMimeTypeByExt(ext string) (mimeType string) {
 	return mimeType
 }
 
-// DocumentProperties is a set of named document properties.
-type DocumentProperties map[string]any
+// Properties is a set of named document properties.
+type Properties map[string]any
+
+// Processor defines an interface for processing a Document.
+type Processor interface {
+	 Process(root string, path string, d fs.DirEntry) (Document, error) 
+}
 
 type Document struct {
 	AbsPath     string             `json:"absPath"`
 	Application string             `json:"application"`
 	ModTime     time.Time          `json:"modTime"`
-	Properties  DocumentProperties `json:"properties"`
+	Properties  Properties `json:"properties"`
 	RelPath     string             `json:"relPath"`
 	Size        int64              `json:"size"`
 	URI         string             `json:"uri"`
