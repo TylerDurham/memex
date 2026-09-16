@@ -46,4 +46,3 @@ func EnsureDirectory(path string) (created bool, err error) {
 
 	return true, nil
 }
-

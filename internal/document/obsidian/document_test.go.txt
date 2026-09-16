@@ -19,7 +19,7 @@ func Test_Obsidisan_Document_LoadDoc(t *testing.T) {
 	docPath := filepath.Join(root, "/testdata/tests/Test_Obsidisan_Document_ScanFM.md")
 	dir := getDirEntry(docPath)
 
-	doc, err := LoadDoc(root, docPath, dir)
+	doc, err := Process(root, docPath, dir)
 
 	if err != nil {
 		t.Fatalf("could not walk %q: %+v", docPath, err)
@@ -44,7 +44,7 @@ func Test_Obsidisan_Document_Serialize(t *testing.T) {
 			return nil
 		}
 
-		doc, err := LoadDoc(root, path, d)
+		doc, err := Process(root, path, d)
 
 		assert.Nilf(t, err, "error laoding doc: %q: %+v", d.Name(), err)
 		assert.NotNilf(t, doc, "should not be nill: $q", d.Name())

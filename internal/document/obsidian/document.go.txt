@@ -16,10 +16,6 @@ import (
 	"github.com/stretchr/testify/assert/yaml"
 )
 
-func FormatObsidianURL(vault string, path string) string {
-	// obsidian://open?vault=Tech-Kasten&file=development%2Fgo%2FGo%20%60fmt%60%20Formatting%20Verbs
-	return fmt.Sprintf("obsidian://open?vault=%s&file=%s", url.PathEscape(vault), url.PathEscape(path))
-}
 
 func Chunk(scanner *bufio.Scanner) (properties walkers.Properties, err error) {
 	return properties, nil
@@ -82,7 +78,7 @@ func ScanDoc(doc *walkers.Document) error {
 
 }
 
-func LoadDoc(root string, path string, file fs.DirEntry) (walkers.Document, error) {
+func Process(root string, path string, file fs.DirEntry) (walkers.Document, error) {
 
 	var doc = walkers.Document{}
 
