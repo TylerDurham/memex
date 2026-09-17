@@ -17,20 +17,26 @@ type Walker struct {
 	handler     document.Processor
 }
 
-var registry = map[string]document.Processor{
-	"obsidian":  obsidian.NewObsidianProcessor(),
+type RegistryInfo map[string]document.Processor
+
+var registry = RegistryInfo{
+	"obsidian": obsidian.NewObsidianProcessor(),
+}
+
+func Registry() RegistryInfo {
+	return registry
 }
 
 func NewWalker(application string, flags document.ProcessFlags) (w Walker, err error) {
 	p, ok := registry[application]
-	if ! ok  {
+	if !ok {
 		return w, fmt.Errorf("application '%s' not supported", application)
 	}
 
 	w = Walker{
 		application: application,
 		flags:       document.Unspecified,
-		handler:   p,
+		handler:     p,
 	}
 
 	return w, nil
