@@ -28,6 +28,7 @@ type Processor interface {
 type Document struct {
 	AbsPath     string     `json:"absPath"`
 	Application string     `json:"application"`
+	MimeType    string     `json:"mimeType"`
 	ModTime     time.Time  `json:"modTime"`
 	Properties  Properties `json:"properties"`
 	RelPath     string     `json:"relPath"`
