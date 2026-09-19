@@ -33,7 +33,7 @@ func (p *ObsidianIndexDocumentProvider) CanLaunch(doc *document.IndexDocument) b
 // LaunchURL provides an xdg-open compatible URL for the document.
 func (p *ObsidianIndexDocumentProvider) LaunchURL(doc *document.IndexDocument) (string, error) {
 	if !p.CanLaunch(doc) {
-		return "", document.ErrorGeneratingLauncURL("can launch: false", doc)
+		return "", document.ErrorGeneratingLaunchURL("can launch: false", doc)
 	}
 
 	// Format the URL for Obsidian notes.
