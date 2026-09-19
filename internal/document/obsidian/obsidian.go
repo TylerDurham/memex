@@ -21,14 +21,20 @@ func (p *ObsidianIndexDocumentProvider) AppName() string {
 	return p.appName
 }
 
+// Extensions returns a map of extensions the provider supports. 
 func (p *ObsidianIndexDocumentProvider) Extensions() document.FileExtensions {
 	return p.extensions
 }
 
+// LoadFileMetadata loads additional file metadata, if any.
 func (p *ObsidianIndexDocumentProvider) LoadFileMetadata(doc *document.IndexDocument, d fs.DirEntry) error {
+	doc.Application = p.AppName()
+	doc.URI = FormatObsidianURL(doc.RepoPath, doc.DocPath)
 	return nil
 }
 
+// LoadDocumentMetadata loads document/format metadata for the document.
+// NOTE: This provider only supports metadata found in Markdown frontmatter.
 func (p *ObsidianIndexDocumentProvider) LoadDocumentMetadata(doc *document.IndexDocument, scanner *bufio.Scanner) error {
 	return nil
 }
@@ -37,6 +43,7 @@ func (p *ObsidianIndexDocumentProvider) LoadDocumentChunks(doc *document.IndexDo
 	return  nil
 }
 
+// NewObsidianIndexDocumentProvider Returns a provider that can handle Markdown files found in Obsidian notes.
 func NewObsidianIndexDocumentProvider() *ObsidianIndexDocumentProvider {
 	ext := document.FileExtensions{
 		".md": {},
@@ -92,42 +99,8 @@ func NewObsidianIndexDocumentProvider() *ObsidianIndexDocumentProvider {
 //		return doc, nil
 //	}
 
+// FormatObsidianURL formats a local file path into a canonical Obsidian URL.
+// Example: obsidian://open?vault=Tech-Kasten&file=development%2Fgo%2FGo%20%60fmt%60%20Formatting%20Verbs
 func FormatObsidianURL(vault string, path string) string {
-	// obsidian://open?vault=Tech-Kasten&file=development%2Fgo%2FGo%20%60fmt%60%20Formatting%20Verbs
 	return fmt.Sprintf("obsidian://open?vault=%s&file=%s", url.PathEscape(vault), url.PathEscape(path))
 }
-
-// func Walk(root string) (docs []walkers.Document, err error) {
-//
-// 	// Collection of documents
-// 	docs = []walkers.Document{}
-//
-// 	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-// 		if err != nil {
-// 			return err
-// 		}
-//
-// 		// process files only
-// 		if d.IsDir() {
-// 			return nil
-// 		}
-//
-// 		// process markdown files only
-// 		if !strings.EqualFold(filepath.Ext(path), ".md") {
-// 			return nil
-// 		}
-//
-// 		doc, err := Process(root, path, d)
-// 		if err != nil {
-// 			return err
-// 		}
-//
-// 		docs = append(docs, doc)
-// 		return nil
-// 	})
-//
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return docs, nil
-// }

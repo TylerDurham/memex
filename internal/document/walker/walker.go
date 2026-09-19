@@ -68,6 +68,12 @@ func (w *Walker) Walk(root string) (docs []document.IndexDocument, err error) {
 		}
 
 		w.handler.LoadFileMetadata(&doc, d)
+		switch w.flags | document.IncludeProperties {
+		case document.IncludeProperties:
+			w.handler.LoadDocumentMetadata(&doc, nil)
+		case document.IncludeChunks:
+			w.handler.LoadDocumentChunks(&doc, nil)
+		}
 
 		docs = append(docs, doc)
 		return nil
@@ -79,4 +85,3 @@ func (w *Walker) Walk(root string) (docs []document.IndexDocument, err error) {
 
 	return docs, nil
 }
-

@@ -19,6 +19,7 @@ type FileExtensions map[string]struct{}
 const (
 	Unspecified       ProcessFlags = 0
 	IncludeProperties ProcessFlags = 1 << iota
+	IncludeChunks     ProcessFlags = 1 << iota
 )
 
 type Chunk struct {
@@ -39,7 +40,7 @@ type Properties map[string]any
 // IndexDocumentProvider defines an interface for processing a Document.
 type IndexDocumentProvider interface {
 	AppName() string
-	Extensions() FileExtensions 
+	Extensions() FileExtensions
 	LoadFileMetadata(doc *IndexDocument, d fs.DirEntry) error
 	LoadDocumentMetadata(doc *IndexDocument, scanner *bufio.Scanner) error
 	LoadDocumentChunks(doc *IndexDocument, scanner *bufio.Scanner) error
@@ -50,6 +51,7 @@ type IndexDocument struct {
 	RepoPath    string     `json:"RepoPath"`
 	Chunks      []Chunk    `json:"Chunks"`
 	DocPath     string     `json:"docPath"`
+	Extension   string     `json:"Extension"`
 	Application string     `json:"application"`
 	MimeType    string     `json:"mimeType"`
 	ModTime     time.Time  `json:"modTime"`
@@ -114,7 +116,8 @@ func NewIndexableDocument(repoPath string, docPath string, provider IndexDocumen
 	doc.ModTime = info.ModTime()
 	doc.RelPath, err = filepath.Rel(repoPath, docPath)
 	doc.Size = info.Size()
-
+	doc.Extension = filepath.Ext(docPath)
+	
 	if err != nil {
 		return doc, fmt.Errorf("could not determine relative path between '%q' and '%q': %w", repoPath, docPath, err)
 	}
