@@ -36,5 +36,7 @@ go.work.sum
 *.swp
 *~
 
+*.tmp
+*.go.tmp
 scratch/
 \.obsidian/
