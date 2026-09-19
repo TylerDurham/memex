@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-// const AppName = "memex"
+const AppName = "memex"
 // const DBName = AppName + "_index.db"
 
 // ErrNotADirectory is returned when a path exists but is not a directory.
