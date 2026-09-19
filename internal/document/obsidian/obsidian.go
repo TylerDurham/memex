@@ -12,16 +12,37 @@ import (
 
 const AppName = "obsidian"
 
+// ObsidianIndexDocumentProvider is a map that exposes the file extensions the provider supports.
 type ObsidianIndexDocumentProvider struct {
 	appName    string
-	extensions document.FileExtensions 
+	canLaunch  bool
+	extensions document.FileExtensions
 }
 
+// AppName gets the name of the provider.
 func (p *ObsidianIndexDocumentProvider) AppName() string {
 	return p.appName
 }
 
-// Extensions returns a map of extensions the provider supports. 
+// CanLaunch returns whether or not the indexable document can be launched on the desktop
+// Default is true for Obsidian Notes.
+func (p *ObsidianIndexDocumentProvider) CanLaunch(doc *document.IndexDocument) bool {
+	return p.canLaunch
+}
+
+// LaunchURL provides an xdg-open compatible URL for the document.
+func (p *ObsidianIndexDocumentProvider) LaunchURL(doc *document.IndexDocument) (string, error) {
+	if !p.CanLaunch(doc) {
+		return "", document.ErrorGeneratingLauncURL("can launch: false", doc)
+	}
+
+	// Format the URL for Obsidian notes.
+	url := fmt.Sprintf("obsidian://open?vault=%s&file=%s", url.PathEscape(doc.RepoPath), url.PathEscape(doc.DocPath))
+
+	return url, nil
+}
+
+// Extensions returns a map of extensions the provider supports.
 func (p *ObsidianIndexDocumentProvider) Extensions() document.FileExtensions {
 	return p.extensions
 }
@@ -40,7 +61,7 @@ func (p *ObsidianIndexDocumentProvider) LoadDocumentMetadata(doc *document.Index
 }
 
 func (p *ObsidianIndexDocumentProvider) LoadDocumentChunks(doc *document.IndexDocument, scanner *bufio.Scanner) error {
-	return  nil
+	return nil
 }
 
 // NewObsidianIndexDocumentProvider Returns a provider that can handle Markdown files found in Obsidian notes.
@@ -50,6 +71,7 @@ func NewObsidianIndexDocumentProvider() *ObsidianIndexDocumentProvider {
 	}
 	return &ObsidianIndexDocumentProvider{
 		appName:    "obsidian",
+		canLaunch:  true,
 		extensions: ext,
 	}
 }

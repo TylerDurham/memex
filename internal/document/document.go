@@ -44,6 +44,11 @@ type IndexDocumentProvider interface {
 	LoadFileMetadata(doc *IndexDocument, d fs.DirEntry) error
 	LoadDocumentMetadata(doc *IndexDocument, scanner *bufio.Scanner) error
 	LoadDocumentChunks(doc *IndexDocument, scanner *bufio.Scanner) error
+	// CanLaunch indicates whether the document can be launched on the desktop.
+	CanLaunch(doc *IndexDocument) bool
+	// Gets the URL to open the document. Should return an error if the provider
+	// does NOT support opening the document on the desktop.
+	LaunchURL(doc *IndexDocument) (string, error)
 }
 
 type IndexDocument struct {
@@ -117,7 +122,7 @@ func NewIndexableDocument(repoPath string, docPath string, provider IndexDocumen
 	doc.RelPath, err = filepath.Rel(repoPath, docPath)
 	doc.Size = info.Size()
 	doc.Extension = filepath.Ext(docPath)
-	
+
 	if err != nil {
 		return doc, fmt.Errorf("could not determine relative path between '%q' and '%q': %w", repoPath, docPath, err)
 	}
