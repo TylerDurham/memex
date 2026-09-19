@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
-	"strings"
 
 	"github.com/TylerDurham/memex/internal/document"
 	"github.com/TylerDurham/memex/internal/document/obsidian"
@@ -14,13 +13,13 @@ import (
 type Walker struct {
 	application string
 	flags       document.ProcessFlags
-	handler     document.Processor
+	handler     document.IndexDocumentProvider
 }
 
-type RegistryInfo map[string]document.Processor
+type RegistryInfo map[string]document.IndexDocumentProvider
 
 var registry = RegistryInfo{
-	"obsidian": obsidian.NewObsidianProcessor(),
+	"obsidian": obsidian.NewObsidianIndexDocumentProvider(),
 }
 
 func Registry() RegistryInfo {
@@ -42,9 +41,9 @@ func NewWalker(application string, flags document.ProcessFlags) (w Walker, err e
 	return w, nil
 }
 
-func (w *Walker) Walk(root string) (docs []document.Document, err error) {
+func (w *Walker) Walk(root string) (docs []document.IndexDocument, err error) {
 	// Collection of documents
-	docs = []document.Document{}
+	docs = []document.IndexDocument{}
 
 	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -56,16 +55,19 @@ func (w *Walker) Walk(root string) (docs []document.Document, err error) {
 			return nil
 		}
 
-		// process markdown files only
-		if !strings.EqualFold(filepath.Ext(path), ".md") {
+		// process only extensions the provider specifies
+		var ext = filepath.Ext(path)
+		if _, ok := w.handler.Extensions()[ext]; !ok {
 			return nil
 		}
 
-		doc, err := w.handler.Process(root, path, d, w.flags)
+		doc, err := document.NewIndexableDocument(root, path, w.handler)
 
 		if err != nil {
 			return err
 		}
+
+		w.handler.LoadFileMetadata(&doc, d)
 
 		docs = append(docs, doc)
 		return nil
@@ -78,8 +80,3 @@ func (w *Walker) Walk(root string) (docs []document.Document, err error) {
 	return docs, nil
 }
 
-// func (w *Walker) AddExtension(ext string) {
-// 	if _, exists := w.extensions[ext]; !exists {
-// 		w.extensions[ext] = struct{}{}
-// 	}
-// }

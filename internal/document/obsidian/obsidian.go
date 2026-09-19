@@ -2,59 +2,95 @@
 package obsidian
 
 import (
+	"bufio"
 	"fmt"
 	"io/fs"
 	"net/url"
-	"path/filepath"
 
 	"github.com/TylerDurham/memex/internal/document"
-	"github.com/TylerDurham/memex/internal/globals"
 )
 
-type ObsidianProcessor struct {
-	extensions map[string]struct{}
+const AppName = "obsidian"
+
+type ObsidianIndexDocumentProvider struct {
+	appName    string
+	extensions document.FileExtensions 
 }
 
-func NewObsidianProcessor() *ObsidianProcessor {
-	ext := map[string]struct{}{
+func (p *ObsidianIndexDocumentProvider) AppName() string {
+	return p.appName
+}
+
+func (p *ObsidianIndexDocumentProvider) Extensions() document.FileExtensions {
+	return p.extensions
+}
+
+func (p *ObsidianIndexDocumentProvider) LoadFileMetadata(doc *document.IndexDocument, d fs.DirEntry) error {
+	return nil
+}
+
+func (p *ObsidianIndexDocumentProvider) LoadDocumentMetadata(doc *document.IndexDocument, scanner *bufio.Scanner) error {
+	return nil
+}
+
+func (p *ObsidianIndexDocumentProvider) LoadDocumentChunks(doc *document.IndexDocument, scanner *bufio.Scanner) error {
+	return  nil
+}
+
+func NewObsidianIndexDocumentProvider() *ObsidianIndexDocumentProvider {
+	ext := document.FileExtensions{
 		".md": {},
 	}
-	op := &ObsidianProcessor{
+	return &ObsidianIndexDocumentProvider{
+		appName:    "obsidian",
 		extensions: ext,
 	}
-
-	return op
 }
 
-func (op *ObsidianProcessor) Process(root string, path string, file fs.DirEntry, flags document.ProcessFlags) (document.Document, error) {
-	var doc = document.Document{}
-
-	if file.IsDir() {
-		return doc, fmt.Errorf("%q: %w", file.Name(), globals.ErrNotAFile)
-	}
-
-	vault := filepath.Base(filepath.Dir(filepath.Dir(path)))
-	rel, err := filepath.Rel(root, path)
-	if err != nil {
-		return doc, err
-	}
-
-	doc.AbsPath = path
-	doc.Application = "obsidian"
-	info, err := file.Info()
-	if err != nil {
-		return doc, err
-	}
-
-	doc.ModTime = info.ModTime()
-	doc.RelPath = rel
-	doc.Size = info.Size()
-	doc.URI = FormatObsidianURL(vault, rel)
-
-//	ScanDoc(&doc)
-
-	return doc, nil
-}
+//	type ObsidianProcessor struct {
+//		extensions map[string]struct{}
+//	}
+//
+//	func NewObsidianProcessor() *ObsidianProcessor {
+//		ext := map[string]struct{}{
+//			".md": {},
+//		}
+//		op := &ObsidianProcessor{
+//			extensions: ext,
+//		}
+//
+//		return op
+//	}
+//
+//	func (op *ObsidianProcessor) Process(root string, path string, file fs.DirEntry, flags document.ProcessFlags) (document.IndexDocument, error) {
+//		var doc = document.IndexDocument{}
+//
+//		if file.IsDir() {
+//			return doc, fmt.Errorf("%q: %w", file.Name(), globals.ErrNotAFile)
+//		}
+//
+//		vault := filepath.Base(filepath.Dir(filepath.Dir(path)))
+//		rel, err := filepath.Rel(root, path)
+//		if err != nil {
+//			return doc, err
+//		}
+//
+//		doc.DocPath = path
+//		doc.Application = "obsidian"
+//		info, err := file.Info()
+//		if err != nil {
+//			return doc, err
+//		}
+//
+//		doc.ModTime = info.ModTime()
+//		doc.RelPath = rel
+//		doc.Size = info.Size()
+//		doc.URI = FormatObsidianURL(vault, rel)
+//
+// //	ScanDoc(&doc)
+//
+//		return doc, nil
+//	}
 
 func FormatObsidianURL(vault string, path string) string {
 	// obsidian://open?vault=Tech-Kasten&file=development%2Fgo%2FGo%20%60fmt%60%20Formatting%20Verbs

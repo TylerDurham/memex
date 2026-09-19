@@ -1,0 +1,67 @@
+package obsidian
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/TylerDurham/memex/internal/document"
+	"github.com/stretchr/testify/assert"
+)
+
+func getCWD() string {
+	wd, _ := os.Getwd()
+	return wd
+}
+
+var rootPath = filepath.Join(getCWD(), "./testdata")
+
+func validateDoc(t *testing.T, path string, d os.DirEntry, doc document.IndexDocument) {
+	var rel, _ = filepath.Rel(rootPath, path)
+	var info, _ = d.Info()
+	assert.NotNil(t, doc)
+	assert.Equal(t, doc.Application, AppName)
+	assert.Equal(t, doc.DocPath, path)
+	assert.Equal(t, doc.RelPath, rel)
+	assert.Equal(t, doc.Size, info.Size())
+}
+
+func Test_Obsidian_Process_Flags(t *testing.T) {
+
+	t.Logf("loading test data from '%q'", rootPath)
+	files, err := os.ReadDir(rootPath)
+
+	if err != nil {
+		t.Fatalf("could not read dir '%q'", err)
+	}
+
+	p := NewObsidianProcessor()
+	for _, file := range files {
+		t.Logf("file: '%q'", file.Name())
+
+		for _, tt := range tests {
+
+			doc, err := p.Process(rootPath, filepath.Join(rootPath, file.Name()), file, tt.flags)
+			if err != nil {
+				t.Fatalf("error: %+v", err)
+			}
+
+			validateDoc(t, filepath.Join(rootPath, file.Name()), file, doc)
+
+			// t.Log(doc.ToJSONString())
+
+			switch tt.propCondition {
+
+			case "eq":
+				assert.Equal(t, len(doc.Properties), tt.propCount, tt.message)
+
+			case "gt":
+				assert.Greater(t, len(doc.Properties), tt.propCount, tt.message)
+
+			case "gte":
+				assert.GreaterOrEqual(t, len(doc.Properties), tt.propCount, tt.message)
+			}
+		}
+
+	}
+}

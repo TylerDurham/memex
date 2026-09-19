@@ -11,10 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func getCWD() string {
-	wd, _ := os.Getwd()
-	return wd
-}
 
 func Test_Obsidian_Walk(t *testing.T) {
 	tData := filepath.Join(getCWD(), "./testdata/obsidian/")

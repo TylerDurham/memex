@@ -1,0 +1,23 @@
+package obsidian
+
+import "github.com/TylerDurham/memex/internal/document"
+
+var tests = []struct {
+	flags         document.ProcessFlags
+	message       string // message logged when condition(s) aren't met
+	propCondition string // The operator/condition (eq, gt, lt, gte, etc.)
+	propCount     int    // the minimum # of properties
+}{
+	{
+		document.Unspecified,
+		"should have no properties",
+		"eq",
+		0,
+	},
+	// {
+	// 	document.IncludeProperties,
+	// 	"should have some properties",
+	// 	"gt",
+	// 	0,
+	// },
+}
