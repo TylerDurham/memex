@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 128" width="920" height="256">
+  <rect width="460" height="128" fill="#0f1117"/>
+  <g transform="translate(8 0)"><g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="32,92 32,36 64,70 96,36 96,92" stroke="#e6e8ef" stroke-width="8"/>
+    <circle cx="64" cy="70" r="17" stroke="#7c5cff" stroke-width="2.5" opacity=".45"/>
+  </g>
+  <g fill="#e6e8ef">
+    <circle cx="32" cy="92" r="8"/><circle cx="32" cy="36" r="8"/>
+    <circle cx="96" cy="36" r="8"/><circle cx="96" cy="92" r="8"/>
+  </g>
+  <circle cx="64" cy="70" r="10" fill="#7c5cff"/></g>
+  <g transform="translate(160 44) scale(1)"><g fill="none" stroke="#e6e8ef" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 36V16A12 12 0 0 1 28 16V36M28 16A12 12 0 0 1 52 16V36"/>
+    <path transform="translate(66 0)" d="M4 20H36A16 16 0 1 0 31.3 31.3"/>
+    <path transform="translate(116 0)" d="M4 36V16A12 12 0 0 1 28 16V36M28 16A12 12 0 0 1 52 16V36"/>
+    <path transform="translate(182 0)" d="M4 20H36A16 16 0 1 0 31.3 31.3"/>
+    <path transform="translate(232 0)" d="M6 4L34 36M34 4L6 36"/>
+  </g></g>
+</svg>
