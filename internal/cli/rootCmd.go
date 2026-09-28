@@ -3,8 +3,9 @@
 //
 // The tree is rooted at "memex", with one subcommand per verb:
 //
-//	memex index  --directory ~/notes    embed a vault's notes into the index
-//	memex search --directory ~/notes …  query that index by similarity
+//	memex init   <name> --directory ~/notes  save a repo's settings, create its index
+//	memex index  <name>                      embed a repo's new and changed notes
+//	memex search <name> <query...>           query that index by similarity
 //
 // Conventions worth keeping as commands are added:
 //

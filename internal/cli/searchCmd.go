@@ -7,12 +7,12 @@ import (
 	"text/tabwriter"
 
 	"github.com/TylerDurham/memex/internal/embed"
+	"github.com/TylerDurham/memex/internal/globals/config"
 	"github.com/TylerDurham/memex/internal/store"
 	"github.com/spf13/cobra"
 )
 
 type searchOptions struct {
-	repoOptions
 	top       int
 	minScore  float32
 	allChunks bool
@@ -22,17 +22,19 @@ func newSearchCmd() *cobra.Command {
 	var opts = searchOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "search <query...>",
-		Args:  cobra.MinimumNArgs(1),
-		Short: "Search a repository's index by meaning.",
+		Use:     "search <name> <query...>",
+		Args:    cobra.MinimumNArgs(2),
+		Example: "  memex search tech-kasten go printf verbs",
+		Short:   "Search a repository's index by meaning.",
 		Long: "Search a repository's index by meaning. By default each file appears once, " +
 			"represented by its best-matching section; --all-chunks lists every matching section.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := opts.resolve(); err != nil {
+			repo, err := config.LoadRepo(args[0])
+			if err != nil {
 				return err
 			}
 
-			st, err := store.Init(opts.name)
+			st, err := store.Init(repo.Name)
 			if err != nil {
 				return err
 			}
@@ -46,8 +48,10 @@ func newSearchCmd() *cobra.Command {
 				return errors.New("index is empty; run 'memex index' first")
 			}
 
-			_, queryPrefix := embed.Prefixes(opts.model)
-			vecs, err := opts.embedder().Embed(cmd.Context(), []string{queryPrefix + strings.Join(args, " ")})
+			// Queries must be embedded with the model the repo was indexed with.
+			_, queryPrefix := embed.Prefixes(repo.Model)
+			embedder := embed.NewOllama(repo.OllamaURL, repo.Model)
+			vecs, err := embedder.Embed(cmd.Context(), []string{queryPrefix + strings.Join(args[1:], " ")})
 			if err != nil {
 				return err
 			}
@@ -69,7 +73,6 @@ func newSearchCmd() *cobra.Command {
 		},
 	}
 
-	opts.addFlags(cmd)
 	cmd.Flags().IntVarP(&opts.top, "top", "k", 5, "Maximum number of results.")
 	cmd.Flags().Float32Var(&opts.minScore, "min-score", 0.5, "Minimum similarity score (0-1).")
 	cmd.Flags().BoolVar(&opts.allChunks, "all-chunks", false, "List every matching section instead of one per file.")
