@@ -1,42 +1,29 @@
 package store
 
 import (
-	"log"
-	"os"
+	"path/filepath"
 	"testing"
 
-	"github.com/TylerDurham/memex/internal/globals/config"
+	"github.com/TylerDurham/memex/internal/globals"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func cleanup(t *testing.T) {
-	t.Logf("removing repo at %q", config.ConfigDir())
-	os.RemoveAll(config.ConfigDir())
-}
-
-func setup(t *testing.T) {
-	tmp, _ := os.MkdirTemp("/tmp", "memex-test-*")
-	os.Setenv("MEMEX_CONFIG_DIR", tmp)
-
-	t.Logf("created repo at %q", tmp)
-
-}
-
+// Tests use InitInPath with t.TempDir() rather than Init: Init resolves the
+// config directory once at program start, so pointing MEMEX_CONFIG_DIR at a
+// temp dir from inside a test has no effect, and cleaning up
+// config.ConfigDir() would delete the user's real config.
 func Test_Store_Init(t *testing.T) {
+	dir := t.TempDir()
 
-	setup(t)
-
-	defer cleanup(t)
-
-	defer os.RemoveAll(config.ConfigDir())
-	t.Logf("%s", config.ConfigDir())
-
-	store, err := Init("foo-test")
-
-	if err != nil {
-		log.Fatalf("Init() failed: %+v", err)
-		return
-	}
-
+	store, err := InitInPath(dir, "foo-test")
+	require.NoError(t, err)
 	defer store.Close()
 
+	assert.FileExists(t, filepath.Join(dir, "foo-test", globals.App().DBName()))
+
+	chunks, files, err := store.Count(t.Context())
+	require.NoError(t, err)
+	assert.Zero(t, chunks)
+	assert.Zero(t, files)
 }

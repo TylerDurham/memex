@@ -1,18 +1,18 @@
 module github.com/TylerDurham/memex
 
-go 1.22.2
+go 1.25
 
 require (
 	github.com/mattn/go-sqlite3 v1.14.49
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
+	github.com/yuin/goldmark/v2 v2.1.5
+	go.yaml.in/yaml/v3 v3.0.5
 )
 
 require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
-	github.com/yuin/goldmark v1.8.6 // indirect
-	go.yaml.in/yaml/v3 v3.0.5 // indirect
 )
 
 replace golang.org/x/sys => github.com/golang/sys v0.4.0

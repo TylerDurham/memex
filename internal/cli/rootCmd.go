@@ -3,8 +3,11 @@
 //
 // The tree is rooted at "memex", with one subcommand per verb:
 //
-//	memex index  --directory ~/notes    embed a vault's notes into the index
-//	memex search --directory ~/notes …  query that index by similarity
+//	memex repo init <name> --directory ~/notes  save a repo's settings, create its index
+//	memex repo list                             list repos
+//	memex repo rm   <name>                      delete a repo's settings and index
+//	memex index  <name>                         embed a repo's new and changed notes
+//	memex search <name> <query...>              query that index by similarity
 //
 // Conventions worth keeping as commands are added:
 //
@@ -42,6 +45,9 @@ var rootCmd = &cobra.Command{
 	Use:   globals.App().Name(),
 	Short: "Simple semantic search.",
 	Long:  "Simple semantic search.",
+	// Execute reports errors; don't let cobra also print them with usage.
+	SilenceErrors: true,
+	SilenceUsage:  true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if global.verbose {
 			logger.LogLevel.Set(slog.LevelDebug)
@@ -60,5 +66,7 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&global.verbose, "verbose", "v", false, "Show debug logging.")
 
-	rootCmd.AddCommand(newInitCmd())
+	rootCmd.AddCommand(newRepoCmd())
+	rootCmd.AddCommand(newIndexCmd())
+	rootCmd.AddCommand(newSearchCmd())
 }

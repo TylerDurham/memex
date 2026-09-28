@@ -3,11 +3,15 @@ package obsidian
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io/fs"
 	"net/url"
+	"path/filepath"
+	"strings"
 
 	"github.com/TylerDurham/memex/internal/document"
+	"github.com/TylerDurham/memex/internal/document/markdown"
 )
 
 const AppName = "obsidian"
@@ -36,10 +40,7 @@ func (p *ObsidianIndexDocumentProvider) LaunchURL(doc *document.IndexDocument) (
 		return "", document.ErrorGeneratingLaunchURL("can launch: false", doc)
 	}
 
-	// Format the URL for Obsidian notes.
-	url := fmt.Sprintf("obsidian://open?vault=%s&file=%s", url.PathEscape(doc.RepoPath), url.PathEscape(doc.DocPath))
-
-	return url, nil
+	return FormatObsidianURL(vaultName(doc), doc.RelPath), nil
 }
 
 // Extensions returns a map of extensions the provider supports.
@@ -50,17 +51,47 @@ func (p *ObsidianIndexDocumentProvider) Extensions() document.FileExtensions {
 // LoadFileMetadata loads additional file metadata, if any.
 func (p *ObsidianIndexDocumentProvider) LoadFileMetadata(doc *document.IndexDocument, d fs.DirEntry) error {
 	doc.Application = p.AppName()
-	doc.URI = FormatObsidianURL(doc.RepoPath, doc.DocPath)
+	doc.URI = FormatObsidianURL(vaultName(doc), doc.RelPath)
 	return nil
+}
+
+// vaultName is the Obsidian vault name, which is the vault folder's name.
+func vaultName(doc *document.IndexDocument) string {
+	return filepath.Base(doc.RepoPath)
 }
 
 // LoadDocumentMetadata loads document/format metadata for the document.
 // NOTE: This provider only supports metadata found in Markdown frontmatter.
+// The scanner must be positioned at the start of the file; only the
+// frontmatter block is read.
 func (p *ObsidianIndexDocumentProvider) LoadDocumentMetadata(doc *document.IndexDocument, scanner *bufio.Scanner) error {
+	if scanner == nil {
+		return errors.New("obsidian: nil scanner")
+	}
+
+	fm, err := markdown.ReadFrontmatter(scanner)
+	if err != nil {
+		return fmt.Errorf("could not load frontmatter for %q: %w", doc.DocPath, err)
+	}
+
+	doc.Properties = fm
 	return nil
 }
 
+// LoadDocumentChunks splits the note body into heading-based chunks for
+// semantic indexing. The scanner must be positioned at the start of the file;
+// frontmatter is skipped and not included in any chunk.
 func (p *ObsidianIndexDocumentProvider) LoadDocumentChunks(doc *document.IndexDocument, scanner *bufio.Scanner) error {
+	if scanner == nil {
+		return errors.New("obsidian: nil scanner")
+	}
+
+	md, err := markdown.ParseScanner(scanner)
+	if err != nil {
+		return fmt.Errorf("could not load chunks for %q: %w", doc.DocPath, err)
+	}
+
+	doc.Chunks = md.Chunks()
 	return nil
 }
 
@@ -121,8 +152,15 @@ func NewObsidianIndexDocumentProvider() *ObsidianIndexDocumentProvider {
 //		return doc, nil
 //	}
 
-// FormatObsidianURL formats a local file path into a canonical Obsidian URL.
+// FormatObsidianURL formats a vault name and vault-relative file path into a
+// canonical Obsidian URL.
 // Example: obsidian://open?vault=Tech-Kasten&file=development%2Fgo%2FGo%20%60fmt%60%20Formatting%20Verbs
-func FormatObsidianURL(vault string, path string) string {
-	return fmt.Sprintf("obsidian://open?vault=%s&file=%s", url.PathEscape(vault), url.PathEscape(path))
+func FormatObsidianURL(vault string, relPath string) string {
+	return fmt.Sprintf("obsidian://open?vault=%s&file=%s", queryEscape(vault), queryEscape(filepath.ToSlash(relPath)))
+}
+
+// queryEscape escapes s for a query value, encoding spaces as %20 rather
+// than "+", which is what Obsidian expects.
+func queryEscape(s string) string {
+	return strings.ReplaceAll(url.QueryEscape(s), "+", "%20")
 }

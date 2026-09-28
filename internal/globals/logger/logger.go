@@ -23,3 +23,7 @@ var sl = slog.New(h)
 func Debug(msg string, args ...any) {
 	sl.Debug(msg, args...)
 }
+
+func Warn(msg string, args ...any) {
+	sl.Warn(msg, args...)
+}
