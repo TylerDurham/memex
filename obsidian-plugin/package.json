@@ -9,7 +9,7 @@
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc --noEmit && node esbuild.config.mjs production",
 		"typecheck": "tsc --noEmit",
-		"test": "node --test --experimental-strip-types src/*.test.ts"
+		"test": "node --test src/*.test.ts"
 	},
 	"devDependencies": {
 		"@types/node": "^26.6.3",

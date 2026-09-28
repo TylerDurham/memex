@@ -8,8 +8,11 @@ import {
 	Setting,
 	SuggestModal,
 	TFile,
+	addIcon,
 	normalizePath,
 } from "obsidian";
+import logo from "../../media/squares/memex-m-transparent-dark-ink.svg";
+import { ICON_ID, toObsidianIcon } from "./icon.ts";
 import { MemexError, search, snippet, type MemexResult } from "./memex.ts";
 
 interface MemexSettings {
@@ -36,12 +39,15 @@ export default class MemexPlugin extends Plugin {
 	override async onload() {
 		await this.loadSettings();
 
+		addIcon(ICON_ID, toObsidianIcon(logo));
+
 		this.addCommand({
 			id: "search",
 			name: "Search by meaning",
+			icon: ICON_ID,
 			callback: () => this.openSearch(),
 		});
-		this.addRibbonIcon("brain-circuit", "Memex search", () => this.openSearch());
+		this.addRibbonIcon(ICON_ID, "Memex search", () => this.openSearch());
 		this.addSettingTab(new MemexSettingTab(this.app, this));
 	}
 

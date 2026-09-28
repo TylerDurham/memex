@@ -15,6 +15,8 @@ const context = await esbuild.context({
 		...builtinModules,
 		...builtinModules.map((m) => `node:${m}`),
 	],
+	// Import SVGs (the logo in ../media) as strings.
+	loader: { ".svg": "text" },
 	format: "cjs",
 	target: "es2022",
 	platform: "node",
