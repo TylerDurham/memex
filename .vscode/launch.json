@@ -1,20 +1,75 @@
 {
+  // Command configs point MEMEX_CONFIG_DIR at ./.debug/config so debugging
+  // never touches your real ~/.config/memex.
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug memex init",
+      "name": "memex: run command...",
       "type": "go",
       "request": "launch",
+      "mode": "debug",
       "program": "${workspaceFolder}/cmd",
-      "args": ["init", "test"]
+      "args": "${input:memexArgs}",
+      "cwd": "${workspaceFolder}",
+      "env": { "MEMEX_CONFIG_DIR": "${workspaceFolder}/.debug/config" }
     },
     {
-      "name": "Debug memex test",
+      "name": "memex: repo init",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/cmd",
+      "args": ["repo", "init", "${workspaceFolder}/.debug/vault", "-v"],
+      "cwd": "${workspaceFolder}",
+      "env": { "MEMEX_CONFIG_DIR": "${workspaceFolder}/.debug/config" }
+    },
+    {
+      "name": "memex: list",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/cmd",
+      "args": ["list", "-v"],
+      "cwd": "${workspaceFolder}",
+      "env": { "MEMEX_CONFIG_DIR": "${workspaceFolder}/.debug/config" }
+    },
+    {
+      "name": "test: current package",
       "type": "go",
       "request": "launch",
       "mode": "test",
-      "program": "${workspaceFolder}/internal/globals/config"
-    } 
-
+      "program": "${fileDirname}",
+      "args": ["-test.v"]
+    },
+    {
+      "name": "test: selected test name",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}",
+      "args": ["-test.v", "-test.run", "^${selectedText}$"]
+    },
+    {
+      "name": "test: by name...",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}",
+      "args": ["-test.v", "-test.run", "${input:testPattern}"]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "memexArgs",
+      "type": "promptString",
+      "description": "memex arguments (split on spaces)",
+      "default": "list -v"
+    },
+    {
+      "id": "testPattern",
+      "type": "promptString",
+      "description": "-test.run pattern (regexp)",
+      "default": "^TestInitThenLoad$"
+    }
   ]
 }

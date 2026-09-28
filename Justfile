@@ -1,3 +1,6 @@
+# Default directory for zsh completions: zinit's completions dir, which is on $fpath
+zsh_completions_dir := env("XDG_DATA_HOME", env("HOME") / ".local/share") / "zinit/completions"
+
 # List available recipes
 default:
     @just --list
@@ -6,8 +9,8 @@ default:
 build:
     go build -o bin/memex ./cmd
 
-# Build memex and symlink ./bin/memex into ~/.local/bin
-install: build
+# Build memex and symlink ~/.local/bin/memex to ./bin/memex, so later builds update it in place
+link: build
     #!/usr/bin/env bash
     set -euo pipefail
     src={{ quote(justfile_directory() / "bin" / "memex") }}
@@ -25,7 +28,7 @@ install: build
     esac
 
 # Remove the ~/.local/bin/memex symlink, if it points at this repo
-uninstall:
+unlink:
     #!/usr/bin/env bash
     set -euo pipefail
     src={{ quote(justfile_directory() / "bin" / "memex") }}
@@ -37,6 +40,38 @@ uninstall:
         echo "$dst isn't a symlink to $src; leaving it alone"
     fi
 
+# Install zsh completions into a directory on $fpath (default: zinit's completions dir)
+completions-zsh dir=zsh_completions_dir: build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    dir={{ quote(dir) }}
+    mkdir -p "$dir"
+    ./bin/memex completion zsh > "$dir/_memex"
+    echo "wrote $dir/_memex"
+    # compinit caches completions in .zcompdump; remove it so _memex is picked up.
+    rm -f "${ZDOTDIR:-$HOME}"/.zcompdump*
+    echo "cleared .zcompdump; run 'exec zsh' to load the completions"
+
+# Remove the zsh completions installed by completions-zsh
+completions-zsh-clean dir=zsh_completions_dir:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    file={{ quote(dir) }}/_memex
+    if [[ ! -e "$file" ]]; then
+        echo "$file doesn't exist; nothing to remove"
+        exit 0
+    fi
+    # Only remove a file that is memex's completion script.
+    if [[ "$(head -n 1 "$file")" != "#compdef memex" ]]; then
+        echo "error: $file isn't a memex completion script; not removing it" >&2
+        exit 1
+    fi
+    rm "$file"
+    echo "removed $file"
+    # Drop the cached completions so zsh forgets _memex.
+    rm -f "${ZDOTDIR:-$HOME}"/.zcompdump*
+    echo "cleared .zcompdump; run 'exec zsh' to reload completions"
+
 # Run the test suite
 test:
     go test ./...
@@ -45,8 +80,11 @@ test:
 test-v:
     go test -v ./...
 
-# gofmt and go vet, then run tests
-check: fmt vet test
+# Run the tests and write an HTML coverage report to coverage.html
+cover:
+    go test -coverprofile=coverage.out ./...
+    go tool cover -html=coverage.out -o coverage.html
+    @echo "wrote coverage.html"
 
 # Report files that aren't gofmt-clean
 fmt:
@@ -56,42 +94,9 @@ fmt:
 vet:
     go vet ./...
 
-# Remove build artifacts
+# gofmt check, go vet, then run tests
+check: fmt vet test
+
+# Remove build artifacts and coverage output
 clean:
-    rm -rf bin
-
-# Build the Obsidian plugin (installs npm dependencies on first run)
-[working-directory: 'obsidian-plugin']
-plugin-build:
-    @[ -d node_modules ] || npm ci --no-audit --no-fund
-    npm run build
-
-# Run the Obsidian plugin's tests
-[working-directory: 'obsidian-plugin']
-plugin-test:
-    @[ -d node_modules ] || npm ci --no-audit --no-fund
-    npm test
-
-# Build the Obsidian plugin and symlink it into a vault (default: $OBSIDIAN_VAULT)
-plugin-install vault=env("OBSIDIAN_VAULT", ""):
-    #!/usr/bin/env bash
-    set -euo pipefail
-    vault={{ quote(vault) }}
-    vault="${vault/#\~/$HOME}"
-    if [[ -z "$vault" ]]; then
-        echo "usage: just plugin-install <vault dir>   (or set OBSIDIAN_VAULT)" >&2
-        exit 1
-    fi
-    if [[ ! -d "$vault/.obsidian" ]]; then
-        echo "error: '$vault' is not an Obsidian vault (no .obsidian folder)" >&2
-        exit 1
-    fi
-    just --justfile {{ quote(justfile()) }} plugin-build
-    src={{ quote(justfile_directory() / "obsidian-plugin") }}
-    dir="$vault/.obsidian/plugins/memex-search"
-    mkdir -p "$dir"
-    for f in main.js manifest.json styles.css; do
-        ln -sfn "$src/$f" "$dir/$f"
-    done
-    echo "linked memex-search into $dir"
-    echo "enable it under Settings → Community plugins (or reload Obsidian if it's already enabled)"
+    rm -rf bin coverage.out coverage.html

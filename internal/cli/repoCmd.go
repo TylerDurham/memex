@@ -1,20 +1,18 @@
+/*
+Copyright © 2026 NAME HERE <EMAIL ADDRESS>
+*/
 package cli
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+)
 
-// newRepoCmd groups the commands that manage repos: their settings and
-// indexes, as opposed to what's in them.
-func newRepoCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "repo",
-		Short: "Manage memex repos.",
-		Long:  "Manage memex repos: create or update a repo's settings, list repos, and remove them.",
-		Args:  cobra.NoArgs,
-	}
+// repoCmd represents the repo command
+var repoCmd = &cobra.Command{
+	Use:   "repo",
+	Short: "Work with a memex repository",
+}
 
-	cmd.AddCommand(newInitCmd())
-	cmd.AddCommand(newRepoListCmd())
-	cmd.AddCommand(newRepoRemoveCmd())
-
-	return cmd
+func init() {
+	rootCmd.AddCommand(repoCmd)
 }
