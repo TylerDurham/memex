@@ -92,8 +92,8 @@ func (ix *Indexer) Index(ctx context.Context, root string) (Stats, error) {
 			return stats, err
 		}
 		if stored == hash {
-			// Content is unchanged, but the URI can still change (e.g. the
-			// vault was renamed), and older indexes lack these fields.
+			// Embedded content is unchanged, but file info can still change:
+			// frontmatter edits, or a renamed vault changing the URI.
 			if err := ix.Store.UpdateFileInfo(ctx, fileRecord(doc, hash)); err != nil {
 				return stats, err
 			}
@@ -190,6 +190,8 @@ func fileRecord(doc document.IndexDocument, hash string) store.File {
 		Path:        doc.RelPath,
 		Application: doc.Application,
 		URI:         doc.URI,
+		Title:       doc.Properties.String("title"),
+		Description: doc.Properties.String("description"),
 		ContentHash: hash,
 		ModTime:     doc.ModTime.Unix(),
 	}

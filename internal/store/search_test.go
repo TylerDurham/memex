@@ -16,7 +16,8 @@ func Test_SearchFiles_BestChunkPerFile(t *testing.T) {
 	defer st.Close()
 
 	// a.md has three chunks that all beat b.md's only chunk.
-	require.NoError(t, st.ReplaceFile(ctx, File{Path: "a.md", Application: "obsidian", URI: "obsidian://open?vault=v&file=a.md", ContentHash: "h"}, []Chunk{
+	require.NoError(t, st.ReplaceFile(ctx, File{Path: "a.md", Application: "obsidian", URI: "obsidian://open?vault=v&file=a.md",
+		Title: "Note A", Description: "About A", ContentHash: "h"}, []Chunk{
 		{Content: "a1", Embedding: []float32{1, 0}},
 		{Content: "a2", Embedding: []float32{1, 0.1}},
 		{Content: "a3", Embedding: []float32{1, 0.2}},
@@ -38,10 +39,13 @@ func Test_SearchFiles_BestChunkPerFile(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, []string{"a1", "b1"}, contents(files))
 
-	// Results carry their file's application and URI.
+	// Results carry their file's record.
 	assert.Equal(t, "obsidian", files[0].Application)
 	assert.Equal(t, "obsidian://open?vault=v&file=a.md", files[0].URI)
+	assert.Equal(t, "Note A", files[0].Title)
+	assert.Equal(t, "About A", files[0].Description)
 	assert.Empty(t, files[1].URI)
+	assert.Empty(t, files[1].Title)
 
 	// minScore still applies, and topK <= 0 means no limit.
 	files, err = st.SearchFiles(ctx, query, 0, 0.1)
@@ -68,7 +72,8 @@ func Test_UpdateFileInfo(t *testing.T) {
 		{Content: "a1", Embedding: []float32{1, 0}},
 	}))
 
-	require.NoError(t, st.UpdateFileInfo(ctx, File{Path: "a.md", Application: "obsidian", URI: "obsidian://a"}))
+	require.NoError(t, st.UpdateFileInfo(ctx, File{Path: "a.md", Application: "obsidian", URI: "obsidian://a",
+		Title: "New Title", Description: "New description"}))
 	require.NoError(t, st.UpdateFileInfo(ctx, File{Path: "missing.md", URI: "x"})) // no-op
 
 	results, err := st.SearchFiles(ctx, []float32{1, 0}, 0, 0)
@@ -76,6 +81,8 @@ func Test_UpdateFileInfo(t *testing.T) {
 	require.Len(t, results, 1)
 	assert.Equal(t, "obsidian", results[0].Application)
 	assert.Equal(t, "obsidian://a", results[0].URI)
+	assert.Equal(t, "New Title", results[0].Title)
+	assert.Equal(t, "New description", results[0].Description)
 	assert.Equal(t, "a1", results[0].Content, "chunks untouched")
 
 	hash, err := st.FileHash(ctx, "a.md")

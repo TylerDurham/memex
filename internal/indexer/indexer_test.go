@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/TylerDurham/memex/internal/document"
@@ -45,7 +47,7 @@ func newIndexer(t *testing.T, emb *fakeEmbedder) *Indexer {
 	require.NoError(t, err)
 	t.Cleanup(func() { st.Close() })
 
-	w, err := walker.NewWalker("obsidian", document.IncludeChunks)
+	w, err := walker.NewWalker("obsidian", document.IncludeProperties|document.IncludeChunks)
 	require.NoError(t, err)
 
 	return &Indexer{Walker: w, Store: st, Embedder: emb, BatchSize: 16}
@@ -77,6 +79,11 @@ func Test_Index_Incremental(t *testing.T) {
 	for _, r := range results {
 		assert.Equal(t, "obsidian", r.Application, r.FilePath)
 		assert.Contains(t, r.URI, "obsidian://open?vault=", r.FilePath)
+		// Every gear spec note has a frontmatter title and description.
+		if strings.HasSuffix(r.FilePath, "-specs.md") {
+			assert.NotEmpty(t, r.Title, r.FilePath)
+			assert.NotEmpty(t, r.Description, r.FilePath)
+		}
 	}
 
 	// Batches stay near BatchSize, except a lone document bigger than it.
@@ -106,6 +113,39 @@ func Test_Index_Incremental(t *testing.T) {
 	assert.Equal(t, 1, stats.Indexed)
 	assert.Equal(t, 1, stats.Removed)
 	assert.Equal(t, total-2, stats.Unchanged)
+}
+
+func Test_Index_FrontmatterEditUpdatesTitleWithoutReembedding(t *testing.T) {
+	ctx := context.Background()
+	vault := copyVault(t)
+	emb := &fakeEmbedder{model: "m1"}
+	ix := newIndexer(t, emb)
+
+	_, err := ix.Index(ctx, vault)
+	require.NoError(t, err)
+
+	note := filepath.Join(vault, "apple-mac-studio-specs.md")
+	data, err := os.ReadFile(note)
+	require.NoError(t, err)
+	edited := regexp.MustCompile(`(?m)^title: .*$`).ReplaceAll(data, []byte("title: Renamed Mac Studio"))
+	require.NotEqual(t, data, edited, "fixture has no title line")
+	require.NoError(t, os.WriteFile(note, edited, 0o644))
+
+	emb.calls = nil
+	stats, err := ix.Index(ctx, vault)
+	require.NoError(t, err)
+	assert.Zero(t, stats.Indexed)
+	assert.Empty(t, emb.calls, "frontmatter-only edit must not re-embed")
+
+	results, err := ix.Store.SearchFiles(ctx, []float32{1, 1}, 0, -1)
+	require.NoError(t, err)
+	for _, r := range results {
+		if r.FilePath == "apple-mac-studio-specs.md" {
+			assert.Equal(t, "Renamed Mac Studio", r.Title)
+			return
+		}
+	}
+	t.Fatal("apple-mac-studio-specs.md not in results")
 }
 
 func Test_Index_ModelChangeReembeds(t *testing.T) {

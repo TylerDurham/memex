@@ -51,6 +51,8 @@ type File struct {
 	Path        string // vault-relative path
 	Application string // provider that indexed it, e.g. "obsidian"
 	URI         string // URI that opens the document in its application, if any
+	Title       string // from frontmatter
+	Description string // from frontmatter
 	ContentHash string
 	ModTime     int64
 }
@@ -60,6 +62,8 @@ type Result struct {
 	Chunk
 	Application string  // from the chunk's file record
 	URI         string  // from the chunk's file record
+	Title       string  // from the chunk's file record
+	Description string  // from the chunk's file record
 	Score       float32 // cosine similarity, 1.0 = identical
 }
 
@@ -106,6 +110,8 @@ func (s *Store) migrate() error {
 			file_path     TEXT PRIMARY KEY,
 			application   TEXT,
 			uri           TEXT,
+			title         TEXT,
+			description   TEXT,
 			content_hash  TEXT NOT NULL,
 			mod_time      INTEGER NOT NULL,
 			indexed_at    INTEGER NOT NULL
@@ -166,29 +172,33 @@ func (s *Store) ReplaceFile(ctx context.Context, f File, newChunks []Chunk) erro
 	}
 
 	if _, err := tx.ExecContext(ctx, `
-		INSERT INTO files (file_path, application, uri, content_hash, mod_time, indexed_at)
-		VALUES (?, ?, ?, ?, ?, unixepoch())
+		INSERT INTO files (file_path, application, uri, title, description, content_hash, mod_time, indexed_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, unixepoch())
 		ON CONFLICT(file_path) DO UPDATE SET
 			application  = excluded.application,
 			uri          = excluded.uri,
+			title        = excluded.title,
+			description  = excluded.description,
 			content_hash = excluded.content_hash,
 			mod_time     = excluded.mod_time,
 			indexed_at   = excluded.indexed_at
-	`, f.Path, f.Application, f.URI, f.ContentHash, f.ModTime); err != nil {
+	`, f.Path, f.Application, f.URI, f.Title, f.Description, f.ContentHash, f.ModTime); err != nil {
 		return fmt.Errorf("upsert file record: %w", err)
 	}
 
 	return tx.Commit()
 }
 
-// UpdateFileInfo sets a file record's application and URI without touching
-// its chunks, for files whose content is unchanged. It writes only when a
+// UpdateFileInfo sets a file record's application, URI, title and
+// description without touching its chunks, for files whose embedded content
+// is unchanged (e.g. only the frontmatter was edited). It writes only when a
 // value actually differs, and does nothing for unknown paths.
 func (s *Store) UpdateFileInfo(ctx context.Context, f File) error {
 	_, err := s.db.ExecContext(ctx, `
-		UPDATE files SET application = ?, uri = ?
-		WHERE file_path = ? AND (application IS NOT ? OR uri IS NOT ?)
-	`, f.Application, f.URI, f.Path, f.Application, f.URI)
+		UPDATE files SET application = ?1, uri = ?2, title = ?3, description = ?4
+		WHERE file_path = ?5 AND (application IS NOT ?1 OR uri IS NOT ?2
+			OR title IS NOT ?3 OR description IS NOT ?4)
+	`, f.Application, f.URI, f.Title, f.Description, f.Path)
 	if err != nil {
 		return fmt.Errorf("update file info: %w", err)
 	}
@@ -278,7 +288,8 @@ func (s *Store) scoreAll(ctx context.Context, query []float32, minScore float32)
 	rows, err := s.db.QueryContext(ctx, `
 		SELECT c.id, c.file_path, c.heading, c.heading_path, c.content, c.start_line,
 		       c.content_hash, c.mod_time, c.embedding,
-		       COALESCE(f.application, ''), COALESCE(f.uri, '')
+		       COALESCE(f.application, ''), COALESCE(f.uri, ''),
+		       COALESCE(f.title, ''), COALESCE(f.description, '')
 		FROM chunks c
 		LEFT JOIN files f ON f.file_path = c.file_path
 	`)
@@ -293,7 +304,7 @@ func (s *Store) scoreAll(ctx context.Context, query []float32, minScore float32)
 		var blob []byte
 		if err := rows.Scan(&r.ID, &r.FilePath, &r.Heading, &r.HeadingPath,
 			&r.Content, &r.StartLine, &r.ContentHash, &r.ModTime, &blob,
-			&r.Application, &r.URI); err != nil {
+			&r.Application, &r.URI, &r.Title, &r.Description); err != nil {
 			return nil, fmt.Errorf("scan chunk: %w", err)
 		}
 		r.Embedding = decodeVector(blob)

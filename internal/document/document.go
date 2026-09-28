@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -32,6 +33,26 @@ type Chunk struct {
 
 // Properties is a set of named document properties.
 type Properties map[string]any
+
+// String returns the property as a string. Scalars (numbers, booleans,
+// dates) are formatted; a missing key, null, or a list or map returns "".
+func (p Properties) String(key string) string {
+	switch v := p[key].(type) {
+	case nil:
+		return ""
+	case string:
+		return strings.TrimSpace(v)
+	case time.Time:
+		if v.Equal(v.Truncate(24 * time.Hour)) {
+			return v.Format(time.DateOnly)
+		}
+		return v.Format(time.RFC3339)
+	case []any, map[string]any:
+		return ""
+	default:
+		return fmt.Sprint(v)
+	}
+}
 
 // // Processor defines an interface for processing a Document.
 // type Processor interface {
