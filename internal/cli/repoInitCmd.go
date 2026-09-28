@@ -1,5 +1,3 @@
-// Package cli
-
 package cli
 
 import (
@@ -32,11 +30,11 @@ func newInitCmd() *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		Short:   "Initialize a new memex repo, or update an existing one's settings.",
 		Long: "Initialize a new memex repo: save its settings to " +
-			filepath.Join("<config dir>", "<name>", config.RepoConfigFile) +
+			filepath.Join("<config dir>", config.ReposDirName, "<name>", config.RepoConfigFile) +
 			" and create its index. Other commands then only need the repo name.\n\n" +
 			"Running init on an existing repo updates only the flags given.",
-		Example: "  memex init tech-kasten --directory ~/vaults/Tech-Kasten\n" +
-			"  memex init tech-kasten --ollama-url https://ollama.example.com",
+		Example: "  memex repo init tech-kasten --directory ~/vaults/Tech-Kasten\n" +
+			"  memex repo init tech-kasten --ollama-url https://ollama.example.com",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := args[0]
 			logger.Debug("config: ", "ConfigDirectory", config.ConfigDir())

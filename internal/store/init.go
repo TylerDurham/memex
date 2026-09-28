@@ -13,7 +13,7 @@ import (
 // a reference to the store.
 func Init(name string) (store *Store, err error) {
 	// TODO: Need to make this overridable to a custom directory
-	return InitInPath(config.ConfigDir(), name)
+	return InitInPath(config.ReposDir(config.ConfigDir()), name)
 }
 
 // InitInPath is Init with an explicit base directory instead of the config

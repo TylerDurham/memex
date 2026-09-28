@@ -3,9 +3,10 @@
 //
 // The tree is rooted at "memex", with one subcommand per verb:
 //
-//	memex init   <name> --directory ~/notes  save a repo's settings, create its index
-//	memex index  <name>                      embed a repo's new and changed notes
-//	memex search <name> <query...>           query that index by similarity
+//	memex repo init <name> --directory ~/notes  save a repo's settings, create its index
+//	memex repo list                             list repos
+//	memex index  <name>                         embed a repo's new and changed notes
+//	memex search <name> <query...>              query that index by similarity
 //
 // Conventions worth keeping as commands are added:
 //
@@ -64,7 +65,7 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&global.verbose, "verbose", "v", false, "Show debug logging.")
 
-	rootCmd.AddCommand(newInitCmd())
+	rootCmd.AddCommand(newRepoCmd())
 	rootCmd.AddCommand(newIndexCmd())
 	rootCmd.AddCommand(newSearchCmd())
 }

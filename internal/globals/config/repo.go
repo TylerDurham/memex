@@ -11,15 +11,19 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
-// RepoConfigFile is the name of a repo's config file inside its directory
-// under the config dir, next to its store.
+// RepoConfigFile is the name of a repo's config file inside its directory,
+// next to its store.
 const RepoConfigFile = "config.yaml"
+
+// ReposDirName is the directory under the config dir that holds one
+// directory per repo.
+const ReposDirName = "repos"
 
 // ErrRepoNotFound is returned when a repo has no config file, i.e. it was
 // never initialized.
 var ErrRepoNotFound = errors.New("repo not found")
 
-// Repo is a repository's persisted settings, written by `memex init` and read
+// Repo is a repository's persisted settings, written by `memex repo init` and read
 // by every command that works on that repository.
 type Repo struct {
 	Name      string `yaml:"-"`          // from the directory name, not stored
@@ -29,9 +33,16 @@ type Repo struct {
 	Model     string `yaml:"model"`      // embedding model; index and search must match
 }
 
-// RepoDir returns the directory holding a repo's config and store.
+// ReposDir returns the directory holding every repo under the config dir
+// base.
+func ReposDir(base string) string {
+	return filepath.Join(base, ReposDirName)
+}
+
+// RepoDir returns the directory holding a repo's config and store under the
+// config dir base.
 func RepoDir(base, name string) string {
-	return filepath.Join(base, name)
+	return filepath.Join(ReposDir(base), name)
 }
 
 // ValidateRepoName rejects names that aren't a single, plain directory name.
@@ -47,7 +58,7 @@ func LoadRepo(name string) (*Repo, error) {
 	return LoadRepoFrom(ConfigDir(), name)
 }
 
-// LoadRepoFrom reads the named repo's config from base. It returns an error
+// LoadRepoFrom reads the named repo's config from the config dir base. It returns an error
 // wrapping ErrRepoNotFound if the repo was never initialized.
 func LoadRepoFrom(base, name string) (*Repo, error) {
 	if err := ValidateRepoName(name); err != nil {
@@ -57,7 +68,7 @@ func LoadRepoFrom(base, name string) (*Repo, error) {
 	path := filepath.Join(RepoDir(base, name), RepoConfigFile)
 	data, err := os.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
-		return nil, fmt.Errorf("%w: %q (run 'memex init %s --directory <path>')", ErrRepoNotFound, name, name)
+		return nil, fmt.Errorf("%w: %q (run 'memex repo init %s --directory <path>')", ErrRepoNotFound, name, name)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("could not read repo config %q: %w", path, err)
@@ -75,7 +86,7 @@ func (r *Repo) Save() error {
 	return r.SaveTo(ConfigDir())
 }
 
-// SaveTo writes the repo's config under base, creating its directory. The
+// SaveTo writes the repo's config under the config dir base, creating its directory. The
 // file is written to a temp file and renamed, so a failed write never leaves
 // a truncated config behind.
 func (r *Repo) SaveTo(base string) error {
@@ -107,4 +118,41 @@ func (r *Repo) SaveTo(base string) error {
 		return err
 	}
 	return os.Rename(tmp.Name(), filepath.Join(dir, RepoConfigFile))
+}
+
+// ListRepos returns every repo in the config dir. See ListReposFrom.
+func ListRepos() ([]*Repo, error) {
+	return ListReposFrom(ConfigDir())
+}
+
+// ListReposFrom returns every repo under the config dir base, sorted by name.
+// Directories without a config file aren't repos and are skipped. Repos whose
+// config can't be read are left out, and their errors joined into the
+// returned error, so one bad config doesn't hide the rest.
+func ListReposFrom(base string) ([]*Repo, error) {
+	entries, err := os.ReadDir(ReposDir(base))
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("could not list repos: %w", err)
+	}
+
+	var repos []*Repo
+	var errs []error
+	for _, e := range entries { // ReadDir sorts by name
+		if !e.IsDir() || ValidateRepoName(e.Name()) != nil {
+			continue
+		}
+		r, err := LoadRepoFrom(base, e.Name())
+		if errors.Is(err, ErrRepoNotFound) {
+			continue
+		}
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		repos = append(repos, r)
+	}
+	return repos, errors.Join(errs...)
 }
