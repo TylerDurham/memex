@@ -3,8 +3,8 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
 	"strings"
-	"text/tabwriter"
 
 	"github.com/TylerDurham/memex/internal/embed"
 	"github.com/TylerDurham/memex/internal/globals/config"
@@ -65,11 +65,17 @@ func newSearchCmd() *cobra.Command {
 				return err
 			}
 
-			out := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
+			// Two lines per result: score and title, then where it matched.
+			out := cmd.OutOrStdout()
 			for _, r := range results {
-				fmt.Fprintf(out, "%.3f\t%s:%d\t%s\n", r.Score, r.FilePath, r.StartLine, r.HeadingPath)
+				fmt.Fprintf(out, "%.3f  %s\n", r.Score, displayTitle(r))
+				fmt.Fprintf(out, "       %s:%d", r.FilePath, r.StartLine)
+				if r.Heading != "" {
+					fmt.Fprintf(out, " · %s", r.Heading)
+				}
+				fmt.Fprintln(out)
 			}
-			return out.Flush()
+			return nil
 		},
 	}
 
@@ -78,4 +84,14 @@ func newSearchCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&opts.allChunks, "all-chunks", false, "List every matching section instead of one per file.")
 
 	return cmd
+}
+
+// displayTitle is the result's frontmatter title, or its file name without
+// the extension when it has none, as Obsidian shows it.
+func displayTitle(r store.Result) string {
+	if r.Title != "" {
+		return r.Title
+	}
+	base := filepath.Base(r.FilePath)
+	return strings.TrimSuffix(base, filepath.Ext(base))
 }
