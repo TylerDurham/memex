@@ -1,0 +1,11 @@
+.memex-result .memex-snippet {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	margin-top: var(--size-2-1);
+}
+
+.memex-result .memex-score {
+	font-variant-numeric: tabular-nums;
+}
