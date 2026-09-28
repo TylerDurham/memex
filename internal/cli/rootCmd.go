@@ -42,6 +42,9 @@ var rootCmd = &cobra.Command{
 	Use:   globals.App().Name(),
 	Short: "Simple semantic search.",
 	Long:  "Simple semantic search.",
+	// Execute reports errors; don't let cobra also print them with usage.
+	SilenceErrors: true,
+	SilenceUsage:  true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if global.verbose {
 			logger.LogLevel.Set(slog.LevelDebug)
@@ -61,4 +64,6 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&global.verbose, "verbose", "v", false, "Show debug logging.")
 
 	rootCmd.AddCommand(newInitCmd())
+	rootCmd.AddCommand(newIndexCmd())
+	rootCmd.AddCommand(newSearchCmd())
 }

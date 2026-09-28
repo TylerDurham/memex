@@ -3,11 +3,13 @@ package obsidian
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io/fs"
 	"net/url"
 
 	"github.com/TylerDurham/memex/internal/document"
+	"github.com/TylerDurham/memex/internal/document/markdown"
 )
 
 const AppName = "obsidian"
@@ -56,11 +58,36 @@ func (p *ObsidianIndexDocumentProvider) LoadFileMetadata(doc *document.IndexDocu
 
 // LoadDocumentMetadata loads document/format metadata for the document.
 // NOTE: This provider only supports metadata found in Markdown frontmatter.
+// The scanner must be positioned at the start of the file; only the
+// frontmatter block is read.
 func (p *ObsidianIndexDocumentProvider) LoadDocumentMetadata(doc *document.IndexDocument, scanner *bufio.Scanner) error {
+	if scanner == nil {
+		return errors.New("obsidian: nil scanner")
+	}
+
+	fm, err := markdown.ReadFrontmatter(scanner)
+	if err != nil {
+		return fmt.Errorf("could not load frontmatter for %q: %w", doc.DocPath, err)
+	}
+
+	doc.Properties = fm
 	return nil
 }
 
+// LoadDocumentChunks splits the note body into heading-based chunks for
+// semantic indexing. The scanner must be positioned at the start of the file;
+// frontmatter is skipped and not included in any chunk.
 func (p *ObsidianIndexDocumentProvider) LoadDocumentChunks(doc *document.IndexDocument, scanner *bufio.Scanner) error {
+	if scanner == nil {
+		return errors.New("obsidian: nil scanner")
+	}
+
+	md, err := markdown.ParseScanner(scanner)
+	if err != nil {
+		return fmt.Errorf("could not load chunks for %q: %w", doc.DocPath, err)
+	}
+
+	doc.Chunks = md.Chunks()
 	return nil
 }
 

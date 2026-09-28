@@ -17,6 +17,35 @@ const EnvConfigDir = "MEMEX_CONFIG_DIR"
 // EnvLogDir is the environment variable that overrides the default config directory.
 const EnvLogDir = "MEMEX_LOG_DIR"
 
+// EnvOllamaURL is the environment variable that sets the Ollama server used
+// for embeddings.
+const EnvOllamaURL = "MEMEX_OLLAMA_URL"
+
+// EnvOllamaModel is the environment variable that sets the embedding model.
+const EnvOllamaModel = "MEMEX_OLLAMA_MODEL"
+
+const DefaultOllamaURL = "http://localhost:11434"
+const DefaultOllamaModel = "nomic-embed-text"
+
+// OllamaURL returns the Ollama server URL from MEMEX_OLLAMA_URL, or the
+// local default.
+func OllamaURL() string {
+	return envOr(EnvOllamaURL, DefaultOllamaURL)
+}
+
+// OllamaModel returns the embedding model from MEMEX_OLLAMA_MODEL, or the
+// default.
+func OllamaModel() string {
+	return envOr(EnvOllamaModel, DefaultOllamaModel)
+}
+
+func envOr(key, fallback string) string {
+	if v, ok := os.LookupEnv(key); ok && v != "" {
+		return v
+	}
+	return fallback
+}
+
 var (
 	configDir string
 	logDir    string

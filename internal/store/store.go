@@ -211,6 +211,43 @@ func (s *Store) KnownFiles(ctx context.Context) (map[string]bool, error) {
 // vector — and returns the topK most similar chunks by cosine similarity,
 // filtered to those scoring at or above minScore.
 func (s *Store) Search(ctx context.Context, query []float32, topK int, minScore float32) ([]Result, error) {
+	results, err := s.scoreAll(ctx, query, minScore)
+	if err != nil {
+		return nil, err
+	}
+	if topK > 0 && len(results) > topK {
+		results = results[:topK]
+	}
+	return results, nil
+}
+
+// SearchFiles is Search grouped by file: it returns the topK most similar
+// files, each represented by its best-scoring chunk, so one long note can't
+// crowd every other note out of the results.
+func (s *Store) SearchFiles(ctx context.Context, query []float32, topK int, minScore float32) ([]Result, error) {
+	results, err := s.scoreAll(ctx, query, minScore)
+	if err != nil {
+		return nil, err
+	}
+
+	seen := make(map[string]bool)
+	var out []Result
+	for _, r := range results {
+		if seen[r.FilePath] {
+			continue
+		}
+		seen[r.FilePath] = true
+		out = append(out, r)
+		if topK > 0 && len(out) == topK {
+			break
+		}
+	}
+	return out, nil
+}
+
+// scoreAll scores every chunk against query and returns those at or above
+// minScore, best first.
+func (s *Store) scoreAll(ctx context.Context, query []float32, minScore float32) ([]Result, error) {
 	rows, err := s.db.QueryContext(ctx, `
 		SELECT id, file_path, heading, heading_path, content, start_line, content_hash, mod_time, embedding
 		FROM chunks
@@ -240,9 +277,6 @@ func (s *Store) Search(ctx context.Context, query []float32, topK int, minScore 
 	}
 
 	sort.Slice(results, func(i, j int) bool { return results[i].Score > results[j].Score })
-	if topK > 0 && len(results) > topK {
-		results = results[:topK]
-	}
 	return results, nil
 }
 

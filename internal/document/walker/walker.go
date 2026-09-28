@@ -2,12 +2,16 @@
 package walker
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"io/fs"
+	"os"
 	"path/filepath"
 
 	"github.com/TylerDurham/memex/internal/document"
 	"github.com/TylerDurham/memex/internal/document/obsidian"
+	"github.com/TylerDurham/memex/internal/globals/logger"
 )
 
 type Walker struct {
@@ -34,7 +38,7 @@ func NewWalker(application string, flags document.ProcessFlags) (w Walker, err e
 
 	w = Walker{
 		application: application,
-		flags:       document.Unspecified,
+		flags:       flags,
 		handler:     p,
 	}
 
@@ -67,12 +71,14 @@ func (w *Walker) Walk(root string) (docs []document.IndexDocument, err error) {
 			return err
 		}
 
-		w.handler.LoadFileMetadata(&doc, d)
-		switch w.flags | document.IncludeProperties {
-		case document.IncludeProperties:
-			w.handler.LoadDocumentMetadata(&doc, nil)
-		case document.IncludeChunks:
-			w.handler.LoadDocumentChunks(&doc, nil)
+		if err := w.handler.LoadFileMetadata(&doc, d); err != nil {
+			return err
+		}
+
+		// A malformed document shouldn't abort the whole walk: keep its file
+		// metadata and log what couldn't be loaded.
+		if err := w.loadContent(&doc); err != nil {
+			logger.Warn("could not load document content", "path", path, "err", err)
 		}
 
 		docs = append(docs, doc)
@@ -84,4 +90,35 @@ func (w *Walker) Walk(root string) (docs []document.IndexDocument, err error) {
 	}
 
 	return docs, nil
+}
+
+// loadContent runs the provider's content loaders requested by the walker's
+// flags. Each loader gets a fresh scanner positioned at the start of the file.
+func (w *Walker) loadContent(doc *document.IndexDocument) error {
+	loaders := []func(*document.IndexDocument, *bufio.Scanner) error{}
+	if w.flags&document.IncludeProperties != 0 {
+		loaders = append(loaders, w.handler.LoadDocumentMetadata)
+	}
+	if w.flags&document.IncludeChunks != 0 {
+		loaders = append(loaders, w.handler.LoadDocumentChunks)
+	}
+	if len(loaders) == 0 {
+		return nil
+	}
+
+	f, err := os.Open(doc.DocPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	for _, load := range loaders {
+		if _, err := f.Seek(0, io.SeekStart); err != nil {
+			return err
+		}
+		if err := load(doc, document.NewScanner(f)); err != nil {
+			return err
+		}
+	}
+	return nil
 }

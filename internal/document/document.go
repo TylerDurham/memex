@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -128,4 +129,14 @@ func NewIndexableDocument(repoPath string, docPath string, provider IndexDocumen
 	}
 
 	return doc, nil
+}
+
+const MaxScanBufferSize = 10 * 1024 * 1024 // Max buffer 10MB
+const InitialScanBufferSize = 64 * 1024    // Initial buff 64KB
+
+// NewScanner returns a line scanner over r sized for long document lines.
+func NewScanner(r io.Reader) *bufio.Scanner {
+	scanner := bufio.NewScanner(r)
+	scanner.Buffer(make([]byte, InitialScanBufferSize), MaxScanBufferSize)
+	return scanner
 }

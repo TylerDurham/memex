@@ -48,3 +48,28 @@ func Test_Obsidian_Walk(t *testing.T) {
 		assert.True(t, strings.HasPrefix(d.URI, walker.handler.AppName()), "URL")
 	}
 }
+
+func Test_Obsidian_Walk_WithContent(t *testing.T) {
+	repoPath := filepath.Join(getCWD(), "./testdata/obsidian/")
+	walker, err := NewWalker("obsidian", document.IncludeProperties|document.IncludeChunks)
+	require.NoError(t, err)
+
+	docs, err := walker.Walk(repoPath)
+	require.NoError(t, err)
+	require.NotEmpty(t, docs)
+
+	for _, d := range docs {
+		assert.NotEmptyf(t, d.Chunks, "%s: no chunks", d.RelPath)
+		for _, c := range d.Chunks {
+			assert.NotEmptyf(t, c.Text, "%s: empty chunk", d.RelPath)
+			assert.LessOrEqualf(t, c.StartLine, c.EndLine, "%s: line range", d.RelPath)
+		}
+	}
+
+	// Every gear spec note carries a title in its frontmatter.
+	for _, d := range docs {
+		if strings.HasSuffix(d.RelPath, "-specs.md") {
+			assert.NotEmptyf(t, d.Properties["title"], "%s: missing title", d.RelPath)
+		}
+	}
+}
