@@ -9,7 +9,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/TylerDurham/memex/internal/document"
+	"github.com/TylerDurham/memex/internal/documents"
 	"github.com/yuin/goldmark/v2/ast"
 	"github.com/yuin/goldmark/v2/parser"
 	"go.yaml.in/yaml/v3"
@@ -117,7 +117,7 @@ func splitDocument(scanner *bufio.Scanner) (frontmatter, markdown []byte, bodyLi
 // Parse reads r once and returns its YAML frontmatter (nil if absent) and the
 // goldmark AST for the body.
 func Parse(r io.Reader) (*Document, error) {
-	return ParseScanner(document.NewScanner(r))
+	return ParseScanner(documents.NewScanner(r))
 }
 
 // ParseScanner is Parse for a caller-supplied scanner, which must be

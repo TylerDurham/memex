@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/TylerDurham/memex/internal/document/walker"
+	"github.com/TylerDurham/memex/internal/documents/walker"
 	"github.com/TylerDurham/memex/internal/globals/config"
 	"github.com/TylerDurham/memex/internal/globals/logger"
 	"github.com/TylerDurham/memex/internal/store"

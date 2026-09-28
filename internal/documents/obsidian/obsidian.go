@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/TylerDurham/memex/internal/document"
-	"github.com/TylerDurham/memex/internal/document/markdown"
+	"github.com/TylerDurham/memex/internal/documents"
+	"github.com/TylerDurham/memex/internal/documents/markdown"
 )
 
 const AppName = "obsidian"
@@ -20,7 +20,7 @@ const AppName = "obsidian"
 type ObsidianIndexDocumentProvider struct {
 	appName    string
 	canLaunch  bool
-	extensions document.FileExtensions
+	extensions documents.FileExtensions
 }
 
 // AppName gets the name of the provider.
@@ -30,33 +30,33 @@ func (p *ObsidianIndexDocumentProvider) AppName() string {
 
 // CanLaunch returns whether or not the indexable document can be launched on the desktop
 // Default is true for Obsidian Notes.
-func (p *ObsidianIndexDocumentProvider) CanLaunch(doc *document.IndexDocument) bool {
+func (p *ObsidianIndexDocumentProvider) CanLaunch(doc *documents.IndexDocument) bool {
 	return p.canLaunch
 }
 
 // LaunchURL provides an xdg-open compatible URL for the document.
-func (p *ObsidianIndexDocumentProvider) LaunchURL(doc *document.IndexDocument) (string, error) {
+func (p *ObsidianIndexDocumentProvider) LaunchURL(doc *documents.IndexDocument) (string, error) {
 	if !p.CanLaunch(doc) {
-		return "", document.ErrorGeneratingLaunchURL("can launch: false", doc)
+		return "", documents.ErrorGeneratingLaunchURL("can launch: false", doc)
 	}
 
 	return FormatObsidianURL(vaultName(doc), doc.RelPath), nil
 }
 
 // Extensions returns a map of extensions the provider supports.
-func (p *ObsidianIndexDocumentProvider) Extensions() document.FileExtensions {
+func (p *ObsidianIndexDocumentProvider) Extensions() documents.FileExtensions {
 	return p.extensions
 }
 
 // LoadFileMetadata loads additional file metadata, if any.
-func (p *ObsidianIndexDocumentProvider) LoadFileMetadata(doc *document.IndexDocument, d fs.DirEntry) error {
+func (p *ObsidianIndexDocumentProvider) LoadFileMetadata(doc *documents.IndexDocument, d fs.DirEntry) error {
 	doc.Application = p.AppName()
 	doc.URI = FormatObsidianURL(vaultName(doc), doc.RelPath)
 	return nil
 }
 
 // vaultName is the Obsidian vault name, which is the vault folder's name.
-func vaultName(doc *document.IndexDocument) string {
+func vaultName(doc *documents.IndexDocument) string {
 	return filepath.Base(doc.RepoPath)
 }
 
@@ -64,7 +64,7 @@ func vaultName(doc *document.IndexDocument) string {
 // NOTE: This provider only supports metadata found in Markdown frontmatter.
 // The scanner must be positioned at the start of the file; only the
 // frontmatter block is read.
-func (p *ObsidianIndexDocumentProvider) LoadDocumentMetadata(doc *document.IndexDocument, scanner *bufio.Scanner) error {
+func (p *ObsidianIndexDocumentProvider) LoadDocumentMetadata(doc *documents.IndexDocument, scanner *bufio.Scanner) error {
 	if scanner == nil {
 		return errors.New("obsidian: nil scanner")
 	}
@@ -81,7 +81,7 @@ func (p *ObsidianIndexDocumentProvider) LoadDocumentMetadata(doc *document.Index
 // LoadDocumentChunks splits the note body into heading-based chunks for
 // semantic indexing. The scanner must be positioned at the start of the file;
 // frontmatter is skipped and not included in any chunk.
-func (p *ObsidianIndexDocumentProvider) LoadDocumentChunks(doc *document.IndexDocument, scanner *bufio.Scanner) error {
+func (p *ObsidianIndexDocumentProvider) LoadDocumentChunks(doc *documents.IndexDocument, scanner *bufio.Scanner) error {
 	if scanner == nil {
 		return errors.New("obsidian: nil scanner")
 	}
@@ -97,7 +97,7 @@ func (p *ObsidianIndexDocumentProvider) LoadDocumentChunks(doc *document.IndexDo
 
 // NewObsidianIndexDocumentProvider Returns a provider that can handle Markdown files found in Obsidian notes.
 func NewObsidianIndexDocumentProvider() *ObsidianIndexDocumentProvider {
-	ext := document.FileExtensions{
+	ext := documents.FileExtensions{
 		".md": {},
 	}
 	return &ObsidianIndexDocumentProvider{
@@ -122,8 +122,8 @@ func NewObsidianIndexDocumentProvider() *ObsidianIndexDocumentProvider {
 //		return op
 //	}
 //
-//	func (op *ObsidianProcessor) Process(root string, path string, file fs.DirEntry, flags document.ProcessFlags) (document.IndexDocument, error) {
-//		var doc = document.IndexDocument{}
+//	func (op *ObsidianProcessor) Process(root string, path string, file fs.DirEntry, flags documents.ProcessFlags) (documents.IndexDocument, error) {
+//		var doc = documents.IndexDocument{}
 //
 //		if file.IsDir() {
 //			return doc, fmt.Errorf("%q: %w", file.Name(), globals.ErrNotAFile)

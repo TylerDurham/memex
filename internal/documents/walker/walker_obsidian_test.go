@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TylerDurham/memex/internal/document"
+	"github.com/TylerDurham/memex/internal/documents"
 	"github.com/TylerDurham/memex/internal/globals/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,7 +21,7 @@ func getCWD() string {
 func Test_Obsidian_Walk(t *testing.T) {
 	repoPath := filepath.Join(getCWD(), "./testdata/obsidian/")
 	t.Logf("loading test files from '%q'", repoPath)
-	walker, _ := NewWalker("obsidian", document.Unspecified)
+	walker, _ := NewWalker("obsidian", documents.Unspecified)
 
 	docs, err := walker.Walk(repoPath)
 	if err != nil {
@@ -51,7 +51,7 @@ func Test_Obsidian_Walk(t *testing.T) {
 
 func Test_Obsidian_Walk_WithContent(t *testing.T) {
 	repoPath := filepath.Join(getCWD(), "./testdata/obsidian/")
-	walker, err := NewWalker("obsidian", document.IncludeProperties|document.IncludeChunks)
+	walker, err := NewWalker("obsidian", documents.IncludeProperties|documents.IncludeChunks)
 	require.NoError(t, err)
 
 	docs, err := walker.Walk(repoPath)
@@ -84,7 +84,7 @@ func writeFiles(t *testing.T, root string, paths ...string) {
 	}
 }
 
-func relPaths(docs []document.IndexDocument) []string {
+func relPaths(docs []documents.IndexDocument) []string {
 	out := make([]string, len(docs))
 	for i, d := range docs {
 		out[i] = d.RelPath
@@ -104,7 +104,7 @@ func Test_Walk_SkipsHidden(t *testing.T) {
 		"sub/.git/notes.md",
 	)
 
-	w, err := NewWalker("obsidian", document.Unspecified)
+	w, err := NewWalker("obsidian", documents.Unspecified)
 	require.NoError(t, err)
 	docs, err := w.Walk(root)
 	require.NoError(t, err)
@@ -116,7 +116,7 @@ func Test_Walk_HiddenRootIsWalked(t *testing.T) {
 	root := filepath.Join(t.TempDir(), ".notes")
 	writeFiles(t, root, "note.md", ".obsidian/README.md")
 
-	w, err := NewWalker("obsidian", document.Unspecified)
+	w, err := NewWalker("obsidian", documents.Unspecified)
 	require.NoError(t, err)
 	docs, err := w.Walk(root)
 	require.NoError(t, err)

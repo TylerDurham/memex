@@ -10,18 +10,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/TylerDurham/memex/internal/document"
-	"github.com/TylerDurham/memex/internal/document/obsidian"
+	"github.com/TylerDurham/memex/internal/documents"
+	"github.com/TylerDurham/memex/internal/documents/obsidian"
 	"github.com/TylerDurham/memex/internal/globals/logger"
 )
 
 type Walker struct {
 	application string
-	flags       document.ProcessFlags
-	handler     document.IndexDocumentProvider
+	flags       documents.ProcessFlags
+	handler     documents.IndexDocumentProvider
 }
 
-type RegistryInfo map[string]document.IndexDocumentProvider
+type RegistryInfo map[string]documents.IndexDocumentProvider
 
 var registry = RegistryInfo{
 	"obsidian": obsidian.NewObsidianIndexDocumentProvider(),
@@ -31,7 +31,7 @@ func Registry() RegistryInfo {
 	return registry
 }
 
-func NewWalker(application string, flags document.ProcessFlags) (w Walker, err error) {
+func NewWalker(application string, flags documents.ProcessFlags) (w Walker, err error) {
 	p, ok := registry[application]
 	if !ok {
 		return w, fmt.Errorf("application '%s' not supported", application)
@@ -46,9 +46,9 @@ func NewWalker(application string, flags document.ProcessFlags) (w Walker, err e
 	return w, nil
 }
 
-func (w *Walker) Walk(root string) (docs []document.IndexDocument, err error) {
+func (w *Walker) Walk(root string) (docs []documents.IndexDocument, err error) {
 	// Collection of documents
-	docs = []document.IndexDocument{}
+	docs = []documents.IndexDocument{}
 
 	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -76,7 +76,7 @@ func (w *Walker) Walk(root string) (docs []document.IndexDocument, err error) {
 			return nil
 		}
 
-		doc, err := document.NewIndexableDocument(root, path, w.handler)
+		doc, err := documents.NewIndexableDocument(root, path, w.handler)
 
 		if err != nil {
 			return err
@@ -105,12 +105,12 @@ func (w *Walker) Walk(root string) (docs []document.IndexDocument, err error) {
 
 // loadContent runs the provider's content loaders requested by the walker's
 // flags. Each loader gets a fresh scanner positioned at the start of the file.
-func (w *Walker) loadContent(doc *document.IndexDocument) error {
-	loaders := []func(*document.IndexDocument, *bufio.Scanner) error{}
-	if w.flags&document.IncludeProperties != 0 {
+func (w *Walker) loadContent(doc *documents.IndexDocument) error {
+	loaders := []func(*documents.IndexDocument, *bufio.Scanner) error{}
+	if w.flags&documents.IncludeProperties != 0 {
 		loaders = append(loaders, w.handler.LoadDocumentMetadata)
 	}
-	if w.flags&document.IncludeChunks != 0 {
+	if w.flags&documents.IncludeChunks != 0 {
 		loaders = append(loaders, w.handler.LoadDocumentChunks)
 	}
 	if len(loaders) == 0 {
@@ -127,7 +127,7 @@ func (w *Walker) loadContent(doc *document.IndexDocument) error {
 		if _, err := f.Seek(0, io.SeekStart); err != nil {
 			return err
 		}
-		if err := load(doc, document.NewScanner(f)); err != nil {
+		if err := load(doc, documents.NewScanner(f)); err != nil {
 			return err
 		}
 	}

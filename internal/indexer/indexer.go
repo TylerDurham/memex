@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/TylerDurham/memex/internal/document"
-	"github.com/TylerDurham/memex/internal/document/walker"
+	"github.com/TylerDurham/memex/internal/documents"
+	"github.com/TylerDurham/memex/internal/documents/walker"
 	"github.com/TylerDurham/memex/internal/embed"
 	"github.com/TylerDurham/memex/internal/store"
 )
@@ -19,7 +19,7 @@ const DefaultBatchSize = 64
 
 // Indexer brings the store in line with a repository on disk.
 type Indexer struct {
-	Walker   walker.Walker // must include document.IncludeChunks
+	Walker   walker.Walker // must include documents.IncludeChunks
 	Store    *store.Store
 	Embedder embed.Embedder
 
@@ -43,7 +43,7 @@ type Stats struct {
 
 // pending is a changed document waiting to be embedded.
 type pending struct {
-	doc  document.IndexDocument
+	doc  documents.IndexDocument
 	hash string
 }
 
@@ -166,7 +166,7 @@ func (ix *Indexer) embedAndStore(ctx context.Context, batch []pending) (int, err
 
 // embedText is what actually gets embedded for a chunk. The heading path
 // gives short chunks the context of where they sit in the note.
-func (ix *Indexer) embedText(c document.Chunk) string {
+func (ix *Indexer) embedText(c documents.Chunk) string {
 	if len(c.HeadingPath) == 0 {
 		return ix.DocumentPrefix + c.Text
 	}
@@ -176,7 +176,7 @@ func (ix *Indexer) embedText(c document.Chunk) string {
 // hash covers everything that affects the stored vectors: the model, the
 // prefix, and each chunk's embedded text and location. A change to any of
 // them re-embeds the document.
-func (ix *Indexer) hash(doc document.IndexDocument) string {
+func (ix *Indexer) hash(doc documents.IndexDocument) string {
 	h := sha256.New()
 	fmt.Fprintf(h, "%s\x00%s\x00", ix.Embedder.Model(), ix.DocumentPrefix)
 	for _, c := range doc.Chunks {
@@ -185,7 +185,7 @@ func (ix *Indexer) hash(doc document.IndexDocument) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func fileRecord(doc document.IndexDocument, hash string) store.File {
+func fileRecord(doc documents.IndexDocument, hash string) store.File {
 	return store.File{
 		Path:        doc.RelPath,
 		Application: doc.Application,
