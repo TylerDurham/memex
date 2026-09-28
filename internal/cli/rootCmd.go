@@ -5,6 +5,7 @@
 //
 //	memex repo init <name> --directory ~/notes  save a repo's settings, create its index
 //	memex repo list                             list repos
+//	memex repo rm   <name>                      delete a repo's settings and index
 //	memex index  <name>                         embed a repo's new and changed notes
 //	memex search <name> <query...>              query that index by similarity
 //

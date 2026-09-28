@@ -156,3 +156,33 @@ func ListReposFrom(base string) ([]*Repo, error) {
 	}
 	return repos, errors.Join(errs...)
 }
+
+// RemoveRepo deletes the named repo from the config dir. See RemoveRepoFrom.
+func RemoveRepo(name string) error {
+	return RemoveRepoFrom(ConfigDir(), name)
+}
+
+// RemoveRepoFrom deletes the named repo's directory under the config dir
+// base: its config and its index. The repository it points at (e.g. the
+// Obsidian vault) is never touched. A repo directory without a config file,
+// such as a leftover index, is removed too. Returns an error wrapping
+// ErrRepoNotFound if there's no such directory.
+func RemoveRepoFrom(base, name string) error {
+	if err := ValidateRepoName(name); err != nil {
+		return err
+	}
+
+	dir := RepoDir(base, name)
+	info, err := os.Stat(dir)
+	if errors.Is(err, fs.ErrNotExist) || (err == nil && !info.IsDir()) {
+		return fmt.Errorf("%w: %q", ErrRepoNotFound, name)
+	}
+	if err != nil {
+		return fmt.Errorf("could not stat repo dir %q: %w", dir, err)
+	}
+
+	if err := os.RemoveAll(dir); err != nil {
+		return fmt.Errorf("could not remove repo dir %q: %w", dir, err)
+	}
+	return nil
+}

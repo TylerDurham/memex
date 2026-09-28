@@ -8,12 +8,13 @@ func newRepoCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "repo",
 		Short: "Manage memex repos.",
-		Long:  "Manage memex repos: create or update a repo's settings, and list repos.",
+		Long:  "Manage memex repos: create or update a repo's settings, list repos, and remove them.",
 		Args:  cobra.NoArgs,
 	}
 
 	cmd.AddCommand(newInitCmd())
 	cmd.AddCommand(newRepoListCmd())
+	cmd.AddCommand(newRepoRemoveCmd())
 
 	return cmd
 }

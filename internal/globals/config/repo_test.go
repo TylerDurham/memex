@@ -76,3 +76,46 @@ func Test_ListRepos(t *testing.T) {
 	assert.Equal(t, "/v/alpha", repos[0].Directory)
 	assert.Equal(t, "zeta", repos[1].Name)
 }
+
+func Test_RemoveRepo(t *testing.T) {
+	base := t.TempDir()
+	vault := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(vault, "note.md"), []byte("# Note\n"), 0o644))
+
+	for _, name := range []string{"keep", "gone"} {
+		require.NoError(t, (&Repo{Name: name, Directory: vault, App: "obsidian"}).SaveTo(base))
+	}
+	// An index database next to the config, as store.Init creates it.
+	require.NoError(t, os.WriteFile(filepath.Join(base, "repos", "gone", "memex_store.db"), []byte("db"), 0o644))
+
+	require.NoError(t, RemoveRepoFrom(base, "gone"))
+
+	assert.NoDirExists(t, filepath.Join(base, "repos", "gone"))
+	assert.DirExists(t, filepath.Join(base, "repos", "keep"), "other repos untouched")
+	assert.FileExists(t, filepath.Join(vault, "note.md"), "vault untouched")
+
+	_, err := LoadRepoFrom(base, "gone")
+	assert.ErrorIs(t, err, ErrRepoNotFound)
+	assert.ErrorIs(t, RemoveRepoFrom(base, "gone"), ErrRepoNotFound, "second remove")
+}
+
+func Test_RemoveRepo_LeftoverWithoutConfig(t *testing.T) {
+	base := t.TempDir()
+	dir := filepath.Join(base, "repos", "old")
+	require.NoError(t, os.MkdirAll(dir, 0o750))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "memex_store.db"), []byte("db"), 0o644))
+
+	require.NoError(t, RemoveRepoFrom(base, "old"))
+	assert.NoDirExists(t, dir)
+}
+
+func Test_RemoveRepo_RejectsUnsafeNames(t *testing.T) {
+	base := t.TempDir()
+	require.NoError(t, (&Repo{Name: "keep", Directory: "/v", App: "obsidian"}).SaveTo(base))
+
+	for _, bad := range []string{"", ".", "..", "../repos", "keep/..", `a\b`} {
+		assert.Error(t, RemoveRepoFrom(base, bad), bad)
+	}
+	assert.DirExists(t, filepath.Join(base, "repos", "keep"))
+	assert.DirExists(t, filepath.Join(base, "repos"))
+}
