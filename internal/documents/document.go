@@ -1,5 +1,7 @@
-// Package document provides types and interfaces for working with documents.
-package document
+// Package documents provides the types and interfaces shared by document
+// providers. Each provider (obsidian, and later PDF, ebook, ...) lives in its
+// own subpackage and implements IndexDocumentProvider.
+package documents
 
 import (
 	"bufio"

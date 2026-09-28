@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TylerDurham/memex/internal/document"
-	"github.com/TylerDurham/memex/internal/document/walker"
+	"github.com/TylerDurham/memex/internal/documents"
+	"github.com/TylerDurham/memex/internal/documents/walker"
 	"github.com/TylerDurham/memex/internal/store"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -35,7 +35,7 @@ func (f *fakeEmbedder) Embed(_ context.Context, texts []string) ([][]float32, er
 // copyVault copies the walker's obsidian testdata into a temp dir so the test
 // can add and delete notes.
 func copyVault(t *testing.T) string {
-	src, err := filepath.Abs("../document/walker/testdata/obsidian")
+	src, err := filepath.Abs("../documents/walker/testdata/obsidian")
 	require.NoError(t, err)
 	dst := t.TempDir()
 	require.NoError(t, os.CopyFS(dst, os.DirFS(src)))
@@ -47,7 +47,7 @@ func newIndexer(t *testing.T, emb *fakeEmbedder) *Indexer {
 	require.NoError(t, err)
 	t.Cleanup(func() { st.Close() })
 
-	w, err := walker.NewWalker("obsidian", document.IncludeProperties|document.IncludeChunks)
+	w, err := walker.NewWalker("obsidian", documents.IncludeProperties|documents.IncludeChunks)
 	require.NoError(t, err)
 
 	return &Indexer{Walker: w, Store: st, Embedder: emb, BatchSize: 16}

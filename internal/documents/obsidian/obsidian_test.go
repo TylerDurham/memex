@@ -3,7 +3,7 @@ package obsidian
 import (
 	"testing"
 
-	"github.com/TylerDurham/memex/internal/document"
+	"github.com/TylerDurham/memex/internal/documents"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -23,7 +23,7 @@ func Test_FormatObsidianURL(t *testing.T) {
 }
 
 func Test_LoadFileMetadata_URI(t *testing.T) {
-	doc := document.IndexDocument{
+	doc := documents.IndexDocument{
 		RepoPath: "/home/me/vaults/Tech-Kasten",
 		DocPath:  "/home/me/vaults/Tech-Kasten/notes/Go fmt.md",
 		RelPath:  "notes/Go fmt.md",

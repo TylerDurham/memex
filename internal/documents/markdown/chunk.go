@@ -3,7 +3,7 @@ package markdown
 import (
 	"strings"
 
-	"github.com/TylerDurham/memex/internal/document"
+	"github.com/TylerDurham/memex/internal/documents"
 	"github.com/yuin/goldmark/v2/ast"
 )
 
@@ -21,7 +21,7 @@ const DefaultMaxChunkChars = 2000
 
 // Chunks splits the body into chunks of at most DefaultMaxChunkChars. See
 // ChunksMax.
-func (d *Document) Chunks() []document.Chunk {
+func (d *Document) Chunks() []documents.Chunk {
 	return d.ChunksMax(DefaultMaxChunkChars)
 }
 
@@ -35,7 +35,7 @@ func (d *Document) Chunks() []document.Chunk {
 // lines outside fenced code), packing as many paragraphs per chunk as fit. A
 // single paragraph longer than maxChars is split between lines; lines are
 // never split. maxChars <= 0 disables splitting.
-func (d *Document) ChunksMax(maxChars int) []document.Chunk {
+func (d *Document) ChunksMax(maxChars int) []documents.Chunk {
 	lines := strings.Split(strings.TrimSuffix(string(d.Source), "\n"), "\n")
 	lineStarts := make([]int, len(lines))
 	for i, off := 1, 0; i < len(lines); i++ {
@@ -64,7 +64,7 @@ func (d *Document) ChunksMax(maxChars int) []document.Chunk {
 		})
 	}
 
-	var chunks []document.Chunk
+	var chunks []documents.Chunk
 	var path []section
 	for i, s := range sections {
 		end := len(lines)
@@ -97,7 +97,7 @@ func (d *Document) ChunksMax(maxChars int) []document.Chunk {
 		}
 
 		for _, r := range splitSection(lines, start, end, maxChars) {
-			chunks = append(chunks, document.Chunk{
+			chunks = append(chunks, documents.Chunk{
 				Text:        strings.Join(lines[r.start:r.end], "\n"),
 				HeadingPath: headings,
 				StartLine:   d.BodyLine + r.start,

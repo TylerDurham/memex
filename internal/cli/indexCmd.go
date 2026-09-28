@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/TylerDurham/memex/internal/document"
-	"github.com/TylerDurham/memex/internal/document/walker"
+	"github.com/TylerDurham/memex/internal/documents"
+	"github.com/TylerDurham/memex/internal/documents/walker"
 	"github.com/TylerDurham/memex/internal/embed"
 	"github.com/TylerDurham/memex/internal/globals/config"
 	"github.com/TylerDurham/memex/internal/globals/logger"
@@ -35,7 +35,7 @@ func newIndexCmd() *cobra.Command {
 			logger.Debug("index", "name", repo.Name, "directory", repo.Directory,
 				"app", repo.App, "ollamaURL", repo.OllamaURL, "model", repo.Model)
 
-			w, err := walker.NewWalker(repo.App, document.IncludeProperties|document.IncludeChunks)
+			w, err := walker.NewWalker(repo.App, documents.IncludeProperties|documents.IncludeChunks)
 			if err != nil {
 				return err
 			}
