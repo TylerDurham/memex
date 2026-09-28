@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io/fs"
 	"net/url"
+	"path/filepath"
+	"strings"
 
 	"github.com/TylerDurham/memex/internal/document"
 	"github.com/TylerDurham/memex/internal/document/markdown"
@@ -38,10 +40,7 @@ func (p *ObsidianIndexDocumentProvider) LaunchURL(doc *document.IndexDocument) (
 		return "", document.ErrorGeneratingLaunchURL("can launch: false", doc)
 	}
 
-	// Format the URL for Obsidian notes.
-	url := fmt.Sprintf("obsidian://open?vault=%s&file=%s", url.PathEscape(doc.RepoPath), url.PathEscape(doc.DocPath))
-
-	return url, nil
+	return FormatObsidianURL(vaultName(doc), doc.RelPath), nil
 }
 
 // Extensions returns a map of extensions the provider supports.
@@ -52,8 +51,13 @@ func (p *ObsidianIndexDocumentProvider) Extensions() document.FileExtensions {
 // LoadFileMetadata loads additional file metadata, if any.
 func (p *ObsidianIndexDocumentProvider) LoadFileMetadata(doc *document.IndexDocument, d fs.DirEntry) error {
 	doc.Application = p.AppName()
-	doc.URI = FormatObsidianURL(doc.RepoPath, doc.DocPath)
+	doc.URI = FormatObsidianURL(vaultName(doc), doc.RelPath)
 	return nil
+}
+
+// vaultName is the Obsidian vault name, which is the vault folder's name.
+func vaultName(doc *document.IndexDocument) string {
+	return filepath.Base(doc.RepoPath)
 }
 
 // LoadDocumentMetadata loads document/format metadata for the document.
@@ -148,8 +152,15 @@ func NewObsidianIndexDocumentProvider() *ObsidianIndexDocumentProvider {
 //		return doc, nil
 //	}
 
-// FormatObsidianURL formats a local file path into a canonical Obsidian URL.
+// FormatObsidianURL formats a vault name and vault-relative file path into a
+// canonical Obsidian URL.
 // Example: obsidian://open?vault=Tech-Kasten&file=development%2Fgo%2FGo%20%60fmt%60%20Formatting%20Verbs
-func FormatObsidianURL(vault string, path string) string {
-	return fmt.Sprintf("obsidian://open?vault=%s&file=%s", url.PathEscape(vault), url.PathEscape(path))
+func FormatObsidianURL(vault string, relPath string) string {
+	return fmt.Sprintf("obsidian://open?vault=%s&file=%s", queryEscape(vault), queryEscape(filepath.ToSlash(relPath)))
+}
+
+// queryEscape escapes s for a query value, encoding spaces as %20 rather
+// than "+", which is what Obsidian expects.
+func queryEscape(s string) string {
+	return strings.ReplaceAll(url.QueryEscape(s), "+", "%20")
 }

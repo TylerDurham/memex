@@ -46,10 +46,21 @@ type Chunk struct {
 	Embedding   []float32
 }
 
+// File is a row in the files table: one indexed document.
+type File struct {
+	Path        string // vault-relative path
+	Application string // provider that indexed it, e.g. "obsidian"
+	URI         string // URI that opens the document in its application, if any
+	ContentHash string
+	ModTime     int64
+}
+
 // Result is a single search hit.
 type Result struct {
 	Chunk
-	Score float32 // cosine similarity, 1.0 = identical
+	Application string  // from the chunk's file record
+	URI         string  // from the chunk's file record
+	Score       float32 // cosine similarity, 1.0 = identical
 }
 
 func Open(path string) (*Store, error) {
@@ -122,17 +133,17 @@ func (s *Store) FileHash(ctx context.Context, relPath string) (string, error) {
 	return hash, nil
 }
 
-// ReplaceFile atomically swaps all chunks for relPath with newChunks and
-// records the new content hash. Runs in a transaction so a crash mid-index
-// never leaves stale + fresh chunks for the same file coexisting.
-func (s *Store) ReplaceFile(ctx context.Context, relPath, contentHash string, modTime int64, newChunks []Chunk) error {
+// ReplaceFile atomically swaps all chunks for f.Path with newChunks and
+// upserts the file record. Runs in a transaction so a crash mid-index never
+// leaves stale + fresh chunks for the same file coexisting.
+func (s *Store) ReplaceFile(ctx context.Context, f File, newChunks []Chunk) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
 	}
 	defer tx.Rollback()
 
-	if _, err := tx.ExecContext(ctx, `DELETE FROM chunks WHERE file_path = ?`, relPath); err != nil {
+	if _, err := tx.ExecContext(ctx, `DELETE FROM chunks WHERE file_path = ?`, f.Path); err != nil {
 		return fmt.Errorf("delete old chunks: %w", err)
 	}
 
@@ -147,25 +158,41 @@ func (s *Store) ReplaceFile(ctx context.Context, relPath, contentHash string, mo
 
 	for _, c := range newChunks {
 		if _, err := stmt.ExecContext(ctx,
-			relPath, c.Heading, c.HeadingPath, c.Content, c.StartLine,
-			contentHash, modTime, encodeVector(c.Embedding),
+			f.Path, c.Heading, c.HeadingPath, c.Content, c.StartLine,
+			f.ContentHash, f.ModTime, encodeVector(c.Embedding),
 		); err != nil {
 			return fmt.Errorf("insert chunk: %w", err)
 		}
 	}
 
 	if _, err := tx.ExecContext(ctx, `
-		INSERT INTO files (file_path, content_hash, mod_time, indexed_at)
-		VALUES (?, ?, ?, unixepoch())
+		INSERT INTO files (file_path, application, uri, content_hash, mod_time, indexed_at)
+		VALUES (?, ?, ?, ?, ?, unixepoch())
 		ON CONFLICT(file_path) DO UPDATE SET
+			application  = excluded.application,
+			uri          = excluded.uri,
 			content_hash = excluded.content_hash,
 			mod_time     = excluded.mod_time,
 			indexed_at   = excluded.indexed_at
-	`, relPath, contentHash, modTime); err != nil {
+	`, f.Path, f.Application, f.URI, f.ContentHash, f.ModTime); err != nil {
 		return fmt.Errorf("upsert file record: %w", err)
 	}
 
 	return tx.Commit()
+}
+
+// UpdateFileInfo sets a file record's application and URI without touching
+// its chunks, for files whose content is unchanged. It writes only when a
+// value actually differs, and does nothing for unknown paths.
+func (s *Store) UpdateFileInfo(ctx context.Context, f File) error {
+	_, err := s.db.ExecContext(ctx, `
+		UPDATE files SET application = ?, uri = ?
+		WHERE file_path = ? AND (application IS NOT ? OR uri IS NOT ?)
+	`, f.Application, f.URI, f.Path, f.Application, f.URI)
+	if err != nil {
+		return fmt.Errorf("update file info: %w", err)
+	}
+	return nil
 }
 
 // RemoveFile deletes all chunks and file record for a path that no longer
@@ -249,8 +276,11 @@ func (s *Store) SearchFiles(ctx context.Context, query []float32, topK int, minS
 // minScore, best first.
 func (s *Store) scoreAll(ctx context.Context, query []float32, minScore float32) ([]Result, error) {
 	rows, err := s.db.QueryContext(ctx, `
-		SELECT id, file_path, heading, heading_path, content, start_line, content_hash, mod_time, embedding
-		FROM chunks
+		SELECT c.id, c.file_path, c.heading, c.heading_path, c.content, c.start_line,
+		       c.content_hash, c.mod_time, c.embedding,
+		       COALESCE(f.application, ''), COALESCE(f.uri, '')
+		FROM chunks c
+		LEFT JOIN files f ON f.file_path = c.file_path
 	`)
 	if err != nil {
 		return nil, fmt.Errorf("query chunks: %w", err)
@@ -259,17 +289,18 @@ func (s *Store) scoreAll(ctx context.Context, query []float32, minScore float32)
 
 	var results []Result
 	for rows.Next() {
-		var c Chunk
+		var r Result
 		var blob []byte
-		if err := rows.Scan(&c.ID, &c.FilePath, &c.Heading, &c.HeadingPath,
-			&c.Content, &c.StartLine, &c.ContentHash, &c.ModTime, &blob); err != nil {
+		if err := rows.Scan(&r.ID, &r.FilePath, &r.Heading, &r.HeadingPath,
+			&r.Content, &r.StartLine, &r.ContentHash, &r.ModTime, &blob,
+			&r.Application, &r.URI); err != nil {
 			return nil, fmt.Errorf("scan chunk: %w", err)
 		}
-		c.Embedding = decodeVector(blob)
+		r.Embedding = decodeVector(blob)
 
-		score := cosineSimilarity(query, c.Embedding)
-		if score >= minScore {
-			results = append(results, Result{Chunk: c, Score: score})
+		r.Score = cosineSimilarity(query, r.Embedding)
+		if r.Score >= minScore {
+			results = append(results, r)
 		}
 	}
 	if err := rows.Err(); err != nil {

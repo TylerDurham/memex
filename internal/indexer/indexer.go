@@ -92,6 +92,11 @@ func (ix *Indexer) Index(ctx context.Context, root string) (Stats, error) {
 			return stats, err
 		}
 		if stored == hash {
+			// Content is unchanged, but the URI can still change (e.g. the
+			// vault was renamed), and older indexes lack these fields.
+			if err := ix.Store.UpdateFileInfo(ctx, fileRecord(doc, hash)); err != nil {
+				return stats, err
+			}
 			stats.Unchanged++
 			continue
 		}
@@ -152,7 +157,7 @@ func (ix *Indexer) embedAndStore(ctx context.Context, batch []pending) (int, err
 			}
 			i++
 		}
-		if err := ix.Store.ReplaceFile(ctx, p.doc.RelPath, p.hash, p.doc.ModTime.Unix(), chunks); err != nil {
+		if err := ix.Store.ReplaceFile(ctx, fileRecord(p.doc, p.hash), chunks); err != nil {
 			return 0, fmt.Errorf("store %q: %w", p.doc.RelPath, err)
 		}
 	}
@@ -178,6 +183,16 @@ func (ix *Indexer) hash(doc document.IndexDocument) string {
 		fmt.Fprintf(h, "%d\x00%s\x00", c.StartLine, ix.embedText(c))
 	}
 	return hex.EncodeToString(h.Sum(nil))
+}
+
+func fileRecord(doc document.IndexDocument, hash string) store.File {
+	return store.File{
+		Path:        doc.RelPath,
+		Application: doc.Application,
+		URI:         doc.URI,
+		ContentHash: hash,
+		ModTime:     doc.ModTime.Unix(),
+	}
 }
 
 func lastOrEmpty(s []string) string {

@@ -70,6 +70,15 @@ func Test_Index_Incremental(t *testing.T) {
 	assert.Equal(t, total, files)
 	assert.Equal(t, stats.Chunks, chunks)
 
+	// File records carry the provider's application and URI.
+	results, err := ix.Store.SearchFiles(ctx, []float32{1, 1}, 0, -1)
+	require.NoError(t, err)
+	require.Len(t, results, total)
+	for _, r := range results {
+		assert.Equal(t, "obsidian", r.Application, r.FilePath)
+		assert.Contains(t, r.URI, "obsidian://open?vault=", r.FilePath)
+	}
+
 	// Batches stay near BatchSize, except a lone document bigger than it.
 	for _, n := range emb.calls[:len(emb.calls)-1] {
 		assert.LessOrEqual(t, n, 16*2)
