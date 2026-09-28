@@ -40,3 +40,6 @@ go.work.sum
 *.go.tmp
 scratch/
 \.obsidian/
+
+# VS Code debug sandbox (see .vscode/launch.json)
+.debug/
