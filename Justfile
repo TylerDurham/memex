@@ -6,6 +6,37 @@ default:
 build:
     go build -o bin/memex ./cmd
 
+# Build memex and symlink ./bin/memex into ~/.local/bin
+install: build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    src={{ quote(justfile_directory() / "bin" / "memex") }}
+    dst="$HOME/.local/bin/memex"
+    if [[ -e "$dst" && ! -L "$dst" ]]; then
+        echo "error: $dst exists and isn't a symlink; not replacing it" >&2
+        exit 1
+    fi
+    mkdir -p "$(dirname "$dst")"
+    ln -sfn "$src" "$dst"
+    echo "linked $dst -> $src"
+    case ":$PATH:" in
+        *":$HOME/.local/bin:"*) ;;
+        *) echo "note: ~/.local/bin isn't on your PATH" >&2 ;;
+    esac
+
+# Remove the ~/.local/bin/memex symlink, if it points at this repo
+uninstall:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    src={{ quote(justfile_directory() / "bin" / "memex") }}
+    dst="$HOME/.local/bin/memex"
+    if [[ -L "$dst" && "$(readlink "$dst")" == "$src" ]]; then
+        rm "$dst"
+        echo "removed $dst"
+    else
+        echo "$dst isn't a symlink to $src; leaving it alone"
+    fi
+
 # Run the test suite
 test:
     go test ./...
