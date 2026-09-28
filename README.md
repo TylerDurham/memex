@@ -1,3 +1,4 @@
+<img src="https://raw.githubusercontent.com/TylerDurham/memex/refs/heads/master/media/memex-lockup-dark.svg?raw=true"/>
 # memex
 
 A local-first semantic search CLI for Obsidian vaults (or any directory of
