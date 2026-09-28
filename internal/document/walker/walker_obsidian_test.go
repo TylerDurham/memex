@@ -73,3 +73,53 @@ func Test_Obsidian_Walk_WithContent(t *testing.T) {
 		}
 	}
 }
+
+// writeFiles creates each path (relative to root) with a small note.
+func writeFiles(t *testing.T, root string, paths ...string) {
+	t.Helper()
+	for _, p := range paths {
+		full := filepath.Join(root, p)
+		require.NoError(t, os.MkdirAll(filepath.Dir(full), 0o750))
+		require.NoError(t, os.WriteFile(full, []byte("# Note\n\nBody.\n"), 0o644))
+	}
+}
+
+func relPaths(docs []document.IndexDocument) []string {
+	out := make([]string, len(docs))
+	for i, d := range docs {
+		out[i] = d.RelPath
+	}
+	return out
+}
+
+func Test_Walk_SkipsHidden(t *testing.T) {
+	root := t.TempDir()
+	writeFiles(t, root,
+		"note.md",
+		"sub/visible.md",
+		"sub/.hidden-note.md",
+		".obsidian/plugins/some-plugin/README.md",
+		".trash/deleted.md",
+		".opencode/node_modules/pkg/README.md",
+		"sub/.git/notes.md",
+	)
+
+	w, err := NewWalker("obsidian", document.Unspecified)
+	require.NoError(t, err)
+	docs, err := w.Walk(root)
+	require.NoError(t, err)
+
+	assert.ElementsMatch(t, []string{"note.md", filepath.Join("sub", "visible.md")}, relPaths(docs))
+}
+
+func Test_Walk_HiddenRootIsWalked(t *testing.T) {
+	root := filepath.Join(t.TempDir(), ".notes")
+	writeFiles(t, root, "note.md", ".obsidian/README.md")
+
+	w, err := NewWalker("obsidian", document.Unspecified)
+	require.NoError(t, err)
+	docs, err := w.Walk(root)
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{"note.md"}, relPaths(docs))
+}

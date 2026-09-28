@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/TylerDurham/memex/internal/document"
 	"github.com/TylerDurham/memex/internal/document/obsidian"
@@ -52,6 +53,16 @@ func (w *Walker) Walk(root string) (docs []document.IndexDocument, err error) {
 	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+
+		// Skip hidden files and folders (.obsidian, .trash, .git, ...): they
+		// hold app state, not documents. The root is exempt so a repo can
+		// itself live at a hidden path such as ~/.notes.
+		if path != root && isHidden(d.Name()) {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
 		}
 
 		// process files only
@@ -121,4 +132,10 @@ func (w *Walker) loadContent(doc *document.IndexDocument) error {
 		}
 	}
 	return nil
+}
+
+// isHidden reports whether a file or folder name is hidden by the Unix
+// dot-prefix convention, which Obsidian also follows.
+func isHidden(name string) bool {
+	return strings.HasPrefix(name, ".")
 }
