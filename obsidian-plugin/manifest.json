@@ -1,0 +1,9 @@
+{
+	"id": "memex-search",
+	"name": "Memex Search",
+	"version": "0.1.0",
+	"minAppVersion": "1.5.0",
+	"description": "Search your vault by meaning using a memex semantic index.",
+	"author": "Tyler Durham",
+	"isDesktopOnly": true
+}

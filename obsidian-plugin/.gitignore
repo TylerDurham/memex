@@ -1,0 +1,3 @@
+node_modules/
+# Build output; Obsidian loads it from the plugin folder.
+main.js
