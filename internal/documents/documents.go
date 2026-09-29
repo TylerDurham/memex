@@ -18,7 +18,7 @@ type Chunk struct {
 type Properties map[string]any
 
 type Document struct {
-	Repo        repo.Config `json:"repo"`
+	Repo        repo.RepoInfo `json:"repo"`
 	Chunks      []Chunk     `json:"chunks"`
 	Path        string      `json:"path"`
 	Extension   string      `json:"extension"`
@@ -31,7 +31,7 @@ type Document struct {
 	URI         string      `json:"uri"`
 }
 
-func NewDocument(repo repo.Config, path string) (Document, error) {
+func NewDocument(repo repo.RepoInfo, path string) (Document, error) {
 	doc := Document{
 		Path: path,
 	}

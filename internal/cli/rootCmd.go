@@ -9,6 +9,7 @@ import (
 
 // verbose is set by the persistent -v/--verbose flag and is available to every subcommand.
 var verbose bool
+var formatJSON bool
 
 // configDirFlag is set by the persistent --config-dir flag. Use configDir() to read the
 // effective config directory rather than this variable.

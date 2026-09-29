@@ -34,7 +34,7 @@ type IndexResult struct {
 	Stats     IndexStats
 }
 
-func Index(repo repo.Config, i strategy.IndexStrategy) (IndexResult, error) {
+func Index(repo repo.RepoInfo, i strategy.IndexStrategy) (IndexResult, error) {
 
 	result := IndexResult{
 		Stats: IndexStats{

@@ -2,6 +2,7 @@
 package repo
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -23,12 +24,27 @@ func reposDir(configDir string) string {
 	return filepath.Join(configDir, ReposDir)
 }
 
-// Config is the contents of a repo's config.yaml.
-type Config struct {
-	Application string `yaml:"application"`
-	Name        string `yaml:"name"`
+// RepoInfo is the contents of a repo's config.yaml.
+type RepoInfo struct {
+	Application string `json:"application" yaml:"application"`
+	Name        string `json:"name" yaml:"name"`
+
 	// Directory is the absolute path to the repository directory.
-	Directory string `yaml:"directory"`
+	Directory  string `json:"directory" yaml:"directory"`
+	ConfigFile string `json:"config" yaml:"config"`
+	Database   string `json:"db" yaml:"db"`
+}
+
+// ToJSONString marshalls the Config into a JSON string.
+func (doc *RepoInfo) ToJSONString() (string, error) {
+
+	json, err := json.MarshalIndent(doc, "", "	")
+
+	if err != nil {
+		return "", fmt.Errorf("could not serialize to json: %+v", err)
+	}
+
+	return string(json), err
 }
 
 // InitOptions are the inputs to Init, as given to the repo init command.
@@ -70,7 +86,7 @@ func Init(configDir string, opts InitOptions) (string, error) {
 		return "", err
 	}
 
-	data, err := yaml.Marshal(Config{Application: opts.Application, Name: name, Directory: directory})
+	data, err := yaml.Marshal(RepoInfo{Application: opts.Application, Name: name, Directory: directory})
 	if err != nil {
 		return "", err
 	}
@@ -86,7 +102,7 @@ var ErrNotFound = errors.New("repo not found")
 
 // Load reads <configDir>/repos/<name>/config.yaml and returns the repo's configuration.
 // It returns an error wrapping ErrNotFound if the repo doesn't exist.
-func Load(configDir, name string) (*Config, error) {
+func Load(configDir, name string) (*RepoInfo, error) {
 	if err := validateName(name); err != nil {
 		return nil, err
 	}
@@ -99,10 +115,13 @@ func Load(configDir, name string) (*Config, error) {
 		}
 		return nil, err
 	}
-	var cfg Config
+	var cfg RepoInfo
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		return nil, fmt.Errorf("parse %s: %w", path, err)
 	}
+
+	cfg.Database = filepath.Join(repos, name, "memex.db")
+	cfg.ConfigFile = path
 	return &cfg, nil
 }
 

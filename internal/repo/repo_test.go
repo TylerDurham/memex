@@ -23,7 +23,7 @@ func TestInitThenLoad(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	want := Config{Application: "obsidian", Name: "My-Vault", Directory: dir}
+	want := RepoInfo{Application: "obsidian", Name: "My-Vault", Directory: dir}
 	if *cfg != want {
 		t.Errorf("Load = %+v, want %+v", *cfg, want)
 	}

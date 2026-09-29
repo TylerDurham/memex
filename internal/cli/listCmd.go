@@ -2,6 +2,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"text/tabwriter"
@@ -32,13 +33,12 @@ var listCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if len(names) == 0 {
+		if len(names) == 0 && !formatJSON {
 			fmt.Fprintf(cmd.OutOrStdout(), "no repos found in %s\n", cfgDir)
 			return nil
 		}
 
-		w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
-		fmt.Fprintln(w, "NAME\tAPPLICATION\tDIRECTORY")
+		repos := []*repo.RepoInfo{}
 		for _, name := range names {
 			cfg, err := repo.Load(cfgDir, name)
 			if err != nil {
@@ -46,12 +46,30 @@ var listCmd = &cobra.Command{
 				fmt.Fprintf(cmd.ErrOrStderr(), "warning: %v\n", err)
 				continue
 			}
-			fmt.Fprintf(w, "%s\t%s\t%s\n", cfg.Name, cfg.Application, cfg.Directory)
+			repos = append(repos, cfg)
+		}
+
+		if formatJSON {
+			// Marshal the whole slice so the output is a single JSON array.
+			data, err := json.MarshalIndent(repos, "", "\t")
+			if err != nil {
+				return fmt.Errorf("could not serialize to json: %w", err)
+			}
+			fmt.Fprintln(cmd.OutOrStdout(), string(data))
+			return nil
+		}
+
+		w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
+		fmt.Fprintln(w, "NAME\tAPPLICATION\tDIRECTORY\tCONFIG\tDB")
+		for _, cfg := range repos {
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", cfg.Name, cfg.Application, cfg.Directory, cfg.ConfigFile, cfg.Database)
 		}
 		return w.Flush()
 	},
 }
 
 func init() {
+
+	listCmd.Flags().BoolVarP(&formatJSON, "json", "j", false, "enable JSON output")
 	rootCmd.AddCommand(listCmd)
 }
