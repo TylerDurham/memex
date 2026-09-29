@@ -1,14 +1,23 @@
 // Package markdown
 package markdown
 
-import "github.com/TylerDurham/memex/internal/documents"
+import (
+	"bufio"
 
-func ReadFrontmatter() ([]documents.Properties, error) {
-	var props []documents.Properties
-	return props, nil
+	"github.com/TylerDurham/memex/internal/documents"
+)
+
+type MarkdownDocStrategy struct {
 }
 
-func ReadChunks() ([]documents.Chunk, error) {
-	var chunks []documents.Chunk
-	return chunks, nil
+func (m *MarkdownDocStrategy) LoadProperties(sc bufio.Scanner, doc *documents.Document) error {
+	return nil
+}
+
+func (m *MarkdownDocStrategy) LoadChunks(sc bufio.Scanner, doc *documents.Document) error {
+	return nil
+}
+
+func NewMarkdownDocStrategy() (MarkdownDocStrategy, error) {
+	return MarkdownDocStrategy{}, nil
 }
