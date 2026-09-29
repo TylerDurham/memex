@@ -41,8 +41,15 @@ var indexCmd = &cobra.Command{
 			return err
 		}
 
+		req := indexers.IndexRequest{
+			Repo:        *repo,
+			IdxStrategy: strat,
+			OnEvent: func(e indexers.Event) {
+				fmt.Printf(" - %s %s\n", e.Kind, e.Path)
+			},
+		}
 		var res indexers.IndexResult
-		res, err = indexers.Index(*repo, strat)
+		res, err = indexers.IndexDir(req)
 
 		if err != nil {
 			return fmt.Errorf("could not index: %v", err)

@@ -10,7 +10,6 @@ import (
 	"github.com/TylerDurham/memex/internal/documents/strategy"
 	"github.com/TylerDurham/memex/internal/globals/logger"
 	"github.com/TylerDurham/memex/internal/indexers/obsidian"
-	"github.com/TylerDurham/memex/internal/repo"
 )
 
 func GetStrategy(application string) (strategy.IdxStrategy, error) {
@@ -34,7 +33,25 @@ type IndexResult struct {
 	Stats     IndexStats
 }
 
-func Index(repo repo.RepoInfo, idxStrat strategy.IdxStrategy) (IndexResult, error) {
+func IndexFile(req IndexRequest) (documents.Document, error) {
+	repo := req.Repo
+	path := req.FilePath
+
+	req.emit(Event{Kind: EventDocIndexing, Path: path})
+
+	doc, err := documents.NewDocument(repo, path)
+	if err != nil {
+		return doc, err
+	}
+
+	req.emit(Event{Kind: EventDocIndexed, Path: path, Doc: &doc})
+	return doc, nil
+}
+
+func IndexDir(req IndexRequest) (IndexResult, error) {
+
+	repo := req.Repo
+	idxStrat := req.IdxStrategy
 
 	result := IndexResult{
 		Stats: IndexStats{
@@ -59,6 +76,7 @@ func Index(repo repo.RepoInfo, idxStrat strategy.IdxStrategy) (IndexResult, erro
 			if _, skip := idxStrat.SkipDirectories()[baseName]; skip {
 				result.Stats.DirsSkipped++
 				logger.Debug("directory skipping", "dir", path)
+				req.emit(Event{Kind: EventDirSkipped, Path: path})
 				return filepath.SkipDir
 			}
 			// Process files only
@@ -73,12 +91,15 @@ func Index(repo repo.RepoInfo, idxStrat strategy.IdxStrategy) (IndexResult, erro
 			// Unknown extension
 			result.Stats.DocsSkipped++
 			logger.Debug("file skipped", "file", path)
+			req.emit(Event{Kind: EventDocSkipped, Path: path})
 			return nil
 		}
 
 		logger.Debug("walking", "path", path)
 
-		doc, err := documents.NewDocument(repo, path)
+		fileReq := req
+		fileReq.FilePath = path
+		doc, err := IndexFile(fileReq)
 
 		if err != nil {
 			return err
