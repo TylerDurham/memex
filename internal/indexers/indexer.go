@@ -34,7 +34,7 @@ type IndexResult struct {
 	Stats     IndexStats
 }
 
-func Index(repo repo.RepoInfo, i strategy.IndexStrategy) (IndexResult, error) {
+func Index(repo repo.RepoInfo, idxStrat strategy.IndexStrategy) (IndexResult, error) {
 
 	result := IndexResult{
 		Stats: IndexStats{
@@ -56,7 +56,7 @@ func Index(repo repo.RepoInfo, i strategy.IndexStrategy) (IndexResult, error) {
 		ext := filepath.Ext(path)
 
 		if d.IsDir() {
-			if _, skip := i.SkipDirectories()[baseName]; skip {
+			if _, skip := idxStrat.SkipDirectories()[baseName]; skip {
 				result.Stats.DirsSkipped++
 				logger.Debug("directory skipping", "dir", path)
 				return filepath.SkipDir
@@ -65,7 +65,9 @@ func Index(repo repo.RepoInfo, i strategy.IndexStrategy) (IndexResult, error) {
 			return nil
 		}
 
-		if _, process := i.Extensions()[ext]; !process {
+		_, docStrat := idxStrat.Extensions()[ext]
+
+		if !docStrat {
 			// Unknown extension
 			result.Stats.DocsSkipped++
 			logger.Debug("file skipped", "file", path)

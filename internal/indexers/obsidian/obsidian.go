@@ -2,6 +2,7 @@ package obsidian
 
 import (
 	"github.com/TylerDurham/memex/internal/documents"
+	"github.com/TylerDurham/memex/internal/documents/markdown"
 	"github.com/TylerDurham/memex/internal/documents/strategy"
 )
 
@@ -33,7 +34,7 @@ func NewObsidianIndexer() *ObsidianIndexer {
 			".obsidian": {},
 		},
 		extensions: strategy.Extensions{
-			".md": {},
+			".md": &markdown.MarkdownDocStrategy{},
 		},
 	}
 
