@@ -49,6 +49,12 @@ var indexCmd = &cobra.Command{
 		}
 
 		log.Printf("%+v", res.Stats)
+
+		if verbose {
+			for _, doc := range res.Documents {
+				log.Printf("%+v", doc)
+			}
+		}
 		return nil
 	},
 }
