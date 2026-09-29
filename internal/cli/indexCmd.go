@@ -15,11 +15,11 @@ import (
 func handleIdxEvent(e indexers.Event) {
 	if e.Kind == indexers.EventDocIndexed {
 		fmt.Printf(" - %s %s\n", e.Kind, e.Path)
-
 	}
 
 	if verbose && e.Kind == indexers.EventDocIndexed {
 		// TODO: Output JSON doc info
+		_ = true
 	}
 }
 
