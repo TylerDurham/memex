@@ -37,7 +37,10 @@ var indexCmd = &cobra.Command{
 			logger.Debug("cmd: index", "repo dir", repo.Directory)
 		}
 
-		strat, _ := indexers.GetStrategy(repo.Application)
+		strat, err := indexers.GetStrategy(repo.Application)
+		if err != nil {
+			return err
+		}
 		err = indexers.Index(*repo, strat)
 		if err != nil {
 			return fmt.Errorf("could not index: %v", err)
