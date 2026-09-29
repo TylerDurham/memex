@@ -1,6 +1,10 @@
 # Default directory for zsh completions: zinit's completions dir, which is on $fpath
 zsh_completions_dir := env("XDG_DATA_HOME", env("HOME") / ".local/share") / "zinit/completions"
 
+# Config directory used by test recipes, so tests never touch your real memex config.
+# Matches scripts/src-env-test.sh; source that script to use it in an interactive shell.
+test_config_dir := justfile_directory() / "tmp/.config/memex"
+
 # List available recipes
 default:
     @just --list
@@ -73,16 +77,16 @@ completions-zsh-clean dir=zsh_completions_dir: unlink
     echo "cleared .zcompdump; run 'exec zsh' to reload completions"
 
 # Run the test suite
-test: src-env-test
-    go test ./...
+test:
+    MEMEX_CONFIG_DIR={{ quote(test_config_dir) }} go test ./...
 
 # Run the test suite with verbose output
 test-v:
-    go test -v ./...
+    MEMEX_CONFIG_DIR={{ quote(test_config_dir) }} go test -v ./...
 
 # Run the tests and write an HTML coverage report to coverage.html
 cover:
-    go test -coverprofile=coverage.out ./...
+    MEMEX_CONFIG_DIR={{ quote(test_config_dir) }} go test -coverprofile=coverage.out ./...
     go tool cover -html=coverage.out -o coverage.html
     @echo "wrote coverage.html"
 
@@ -100,7 +104,3 @@ check: fmt vet test
 # Remove build artifacts and coverage output
 clean:
     rm -rf bin coverage.out coverage.html
-
-# setup test ENV
-src-env-test:
-  source ./scripts/src-env-test.sh

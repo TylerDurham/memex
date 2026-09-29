@@ -42,6 +42,8 @@ tmp/
 *.go.tmp
 scratch/
 \.obsidian/
+# ...except in test vaults, where .obsidian/ checks that the indexer skips it.
+!testdata/repos/*/.obsidian/
 
 # VS Code debug sandbox (see .vscode/launch.json)
 .debug/
