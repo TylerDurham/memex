@@ -29,5 +29,3 @@ func (m *MarkdownDocStrategy) Ext() string {
 func NewMarkdownDocStrategy() (MarkdownDocStrategy, error) {
 	return MarkdownDocStrategy{}, nil
 }
-
-

@@ -6,15 +6,14 @@ import (
 	"github.com/TylerDurham/memex/internal/documents"
 )
 
-// DocStrategy extracts indexable content from one kind of file, identified
-// by its extension. An IdxStrategy maps extensions to DocStrategies (see
-// Extensions), and the indexer calls one for each matching file it walks.
+// Doc extracts indexable content from one kind of file, identified by its
+// extension. An Index maps extensions to Doc strategies (see Extensions), and the indexer calls one for each matching file it walks.
 //
 // For each file, the indexer calls LoadProperties and then LoadChunks on the
 // same scanner, so LoadChunks continues where LoadProperties stopped.
 // Implementations must not keep per-file state: one instance is reused for
 // every file with its extension.
-type DocStrategy interface {
+type Doc interface {
 	// LoadProperties reads the file's metadata (for Markdown, the YAML
 	// frontmatter) and stores it in doc.Properties. It should stop reading
 	// at the end of the metadata. A file with no metadata is not an error.

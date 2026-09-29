@@ -2,8 +2,8 @@ package obsidian
 
 import (
 	"github.com/TylerDurham/memex/internal/documents"
-	"github.com/TylerDurham/memex/internal/documents/strategy"
-	"github.com/TylerDurham/memex/internal/documents/strategy/markdown"
+	"github.com/TylerDurham/memex/internal/strategy"
+	"github.com/TylerDurham/memex/internal/strategy/markdown"
 )
 
 type ObsidianIndexer struct {

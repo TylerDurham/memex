@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 
 	"github.com/TylerDurham/memex/internal/documents"
-	"github.com/TylerDurham/memex/internal/documents/strategy"
 	"github.com/TylerDurham/memex/internal/globals/logger"
-	"github.com/TylerDurham/memex/internal/indexers/obsidian"
+	"github.com/TylerDurham/memex/internal/strategy"
+	"github.com/TylerDurham/memex/internal/strategy/obsidian"
 )
 
-func GetStrategy(application string) (strategy.IdxStrategy, error) {
+func GetStrategy(application string) (strategy.Index, error) {
 	switch application {
 	case "obsidian":
 		return obsidian.NewObsidianIndexer(), nil

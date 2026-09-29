@@ -2,8 +2,8 @@ package indexers
 
 import (
 	"github.com/TylerDurham/memex/internal/documents"
-	"github.com/TylerDurham/memex/internal/documents/strategy"
 	"github.com/TylerDurham/memex/internal/repo"
+	"github.com/TylerDurham/memex/internal/strategy"
 )
 
 // EventKind identifies what happened in an Event.
@@ -14,7 +14,7 @@ const (
 	EventDocIndexing EventKind = "doc-indexing"
 	// EventDocIndexed is sent after a document is indexed successfully.
 	EventDocIndexed EventKind = "doc-indexed"
-	// EventDocSkipped is sent for a file whose extension has no DocStrategy.
+	// EventDocSkipped is sent for a file whose extension has no strategy.Doc.
 	EventDocSkipped EventKind = "doc-skipped"
 	// EventDirSkipped is sent for a directory listed in SkipDirectories.
 	EventDirSkipped EventKind = "dir-skipped"
@@ -31,7 +31,7 @@ type Event struct {
 
 type IndexRequest struct {
 	Repo        repo.RepoInfo
-	IdxStrategy strategy.IdxStrategy
+	IdxStrategy strategy.Index
 	FilePath    string
 
 	// OnEvent, if set, is called for each Event as indexing progresses. It

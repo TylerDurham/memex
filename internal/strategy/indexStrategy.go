@@ -10,29 +10,29 @@ import (
 // that the indexer does not descend into, wherever they appear in the repo.
 type SkipDirectories map[string]struct{}
 
-// Extensions maps a file extension, in the form DocStrategy.Ext returns, to
-// the DocStrategy that handles files with that extension. Files whose
+// Extensions maps a file extension, in the form Doc.Ext returns, to the
+// Doc strategy that handles files with that extension. Files whose
 // extension has no entry are skipped.
-type Extensions map[string]DocStrategy
+type Extensions map[string]Doc
 
-// IdxStrategy adapts indexing to the application that owns a repo, such as
+// Index adapts indexing to the application that owns a repo, such as
 // Obsidian. It decides which parts of the repo are walked and which
-// DocStrategy reads each file. GetStrategy in the indexers package returns
-// the IdxStrategy for a repo's application.
+// Doc strategy reads each file. GetStrategy in the indexers package returns
+// the Index strategy for a repo's application.
 //
 // One instance is used for a whole indexing run, so the maps it returns must
 // not change during the run, and callers must not modify them.
-type IdxStrategy interface {
+type Index interface {
 	// SkipDirectories returns the directories to leave out of the walk,
 	// such as the application's own settings folder.
 	SkipDirectories() SkipDirectories
 
-	// Extensions returns the file types to index and the DocStrategy that
+	// Extensions returns the file types to index and the Doc strategy that
 	// reads each one.
 	Extensions() Extensions
 
 	// Load fills in the document fields that depend on the application
 	// rather than the file format, such as doc.URI. The indexer calls it
-	// after the DocStrategy has loaded the file's properties and chunks.
+	// after the Doc strategy has loaded the file's properties and chunks.
 	Load(doc *documents.Document) error
 }
