@@ -24,22 +24,22 @@ func GetStrategy(application string) (strategy.IndexStrategy, error) {
 }
 
 type IndexStats struct {
-	DirsSkipped int
-	DocsSkipped int
+	DirsSkipped  int
+	DocsSkipped  int
 	DocsPrepared int
 }
 
 type IndexResult struct {
 	Documents []documents.Document
-	Stats IndexStats
+	Stats     IndexStats
 }
 
 func Index(repo repo.Config, i strategy.IndexStrategy) (IndexResult, error) {
 
 	result := IndexResult{
 		Stats: IndexStats{
-			DocsSkipped: 0,
-			DirsSkipped: 0,
+			DocsSkipped:  0,
+			DirsSkipped:  0,
 			DocsPrepared: 0,
 		},
 	}
@@ -55,13 +55,12 @@ func Index(repo repo.Config, i strategy.IndexStrategy) (IndexResult, error) {
 		baseName := d.Name()
 		ext := filepath.Ext(path)
 
-		if _, skip := i.SkipDirectories()[baseName]; skip {
-			result.Stats.DirsSkipped++	
-			logger.Debug("directory skipping", "dir", path)
-			return filepath.SkipDir
-		}
-
 		if d.IsDir() {
+			if _, skip := i.SkipDirectories()[baseName]; skip {
+				result.Stats.DirsSkipped++
+				logger.Debug("directory skipping", "dir", path)
+				return filepath.SkipDir
+			}
 			// Process files only
 			return nil
 		}
@@ -86,5 +85,7 @@ func Index(repo repo.Config, i strategy.IndexStrategy) (IndexResult, error) {
 
 		return nil
 	})
+
+	result.Documents = docs
 	return result, err
 }
