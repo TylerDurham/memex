@@ -6,17 +6,30 @@ import (
 	"github.com/TylerDurham/memex/internal/documents"
 )
 
-// DocStrategy is an interface that defines the operations necessary 
-// to load properties and semantic indexing chunks from a file.
+// DocStrategy extracts indexable content from one kind of file, identified
+// by its extension. An IdxStrategy maps extensions to DocStrategies (see
+// Extensions), and the indexer calls one for each matching file it walks.
+//
+// For each file, the indexer calls LoadProperties and then LoadChunks on the
+// same scanner, so LoadChunks continues where LoadProperties stopped.
+// Implementations must not keep per-file state: one instance is reused for
+// every file with its extension.
 type DocStrategy interface {
-	// LoadProperties reads the properties from the scanner and loads them
-	// into the document.
-	LoadProperties(sc bufio.Scanner, doc *documents.Document) error
+	// LoadProperties reads the file's metadata (for Markdown, the YAML
+	// frontmatter) and stores it in doc.Properties. It should stop reading
+	// at the end of the metadata. A file with no metadata is not an error.
+	LoadProperties(sc *bufio.Scanner, doc *documents.Document) error
 
-	// LoadChunks reads the chunks from the scanner and loads them 
-	// into the document.
-	LoadChunks(sc bufio.Scanner, doc *documents.Document) error
+	// LoadChunks reads the rest of the file and appends it to doc.Chunks,
+	// split into the sections that get embedded for semantic search. Each
+	// Chunk records its heading path and 1-based start and end lines.
+	LoadChunks(sc *bufio.Scanner, doc *documents.Document) error
 
+	// Name returns a human-readable name for the strategy, such as
+	// "Markdown", for logs and CLI output.
 	Name() string
+
+	// Ext returns the file extension this strategy handles, lowercase and
+	// with the leading dot (".md"), in the form filepath.Ext returns.
 	Ext() string
 }
