@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"os"
 
 	"github.com/TylerDurham/memex/internal/globals/logger"
 	"github.com/TylerDurham/memex/internal/indexers"
@@ -15,15 +16,15 @@ import (
 func handleIdxEvent(e indexers.Event) {
 	if e.Kind == indexers.EventDocIndexed {
 		fmt.Printf(" - %s %s\n", e.Kind, e.Path)
-		if verbose  {
+		if verbose {
 			json, err := e.Doc.ToJSONString()
 			if err != nil {
-				fmt.Printf("warning: could not convert doc to JSON")
+				fmt.Fprintf(os.Stderr, "warning: could not convert doc to JSON: %v\n", err)
+				return
 			}
 			fmt.Printf("%s\n", json)
 		}
 	}
-
 }
 
 // indexCmd represents the index command
