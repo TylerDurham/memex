@@ -30,9 +30,11 @@ type RepoInfo struct {
 	Name        string `json:"name" yaml:"name"`
 
 	// Directory is the absolute path to the repository directory.
-	Directory  string `json:"directory" yaml:"directory"`
-	ConfigFile string `json:"config" yaml:"config"`
-	Database   string `json:"db" yaml:"db"`
+	Directory string `json:"directory" yaml:"directory"`
+
+	// ConfigFile and Database are derived by Load, not stored in config.yaml.
+	ConfigFile string `json:"config" yaml:"-"`
+	Database   string `json:"db" yaml:"-"`
 }
 
 // ToJSONString marshalls the Config into a JSON string.

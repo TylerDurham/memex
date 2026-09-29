@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -23,9 +24,24 @@ func TestInitThenLoad(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	want := RepoInfo{Application: "obsidian", Name: "My-Vault", Directory: dir}
+	want := RepoInfo{
+		Application: "obsidian",
+		Name:        "My-Vault",
+		Directory:   dir,
+		ConfigFile:  path,
+		Database:    filepath.Join(configDir, ReposDir, "My-Vault", "memex.db"),
+	}
 	if *cfg != want {
 		t.Errorf("Load = %+v, want %+v", *cfg, want)
+	}
+
+	// Derived fields must not be written to config.yaml.
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s := string(data); strings.Contains(s, "config:") || strings.Contains(s, "db:") {
+		t.Errorf("config.yaml contains derived fields:\n%s", s)
 	}
 }
 
