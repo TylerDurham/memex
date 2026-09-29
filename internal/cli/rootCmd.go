@@ -2,8 +2,10 @@ package cli
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/TylerDurham/memex/internal/config"
+	"github.com/TylerDurham/memex/internal/globals/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -24,11 +26,26 @@ func configDir() (string, error) {
 	return config.Dir()
 }
 
+// LogFile is the name of the log file in the config directory.
+const LogFile = "memex.log"
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "memex",
 	Short: "A simple semantic indexing system.",
 	Long:  `// TODO: Replace with longer description.`,
+	// Log to <config dir>/memex.log as well as the console. A log file that can't be
+	// opened isn't worth failing the command over, so it's only a warning.
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		cfgDir, err := configDir()
+		if err != nil {
+			return err
+		}
+		if err := logger.OpenFile(filepath.Join(cfgDir, LogFile)); err != nil {
+			logger.Warn("warning: could not open log file: %v\n", err)
+		}
+		return nil
+	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -38,6 +55,7 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
+	logger.Close()
 	if err != nil {
 		os.Exit(1)
 	}

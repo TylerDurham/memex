@@ -6,6 +6,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/TylerDurham/memex/internal/globals/logger"
@@ -21,7 +22,7 @@ func runCmd(t *testing.T, args ...string) (stdout, stderr string, err error) {
 	configDirFlag = ""
 	repoInitName = ""
 	repoInitApplication = "obsidian"
-	logger.LogLevel.Set(slog.LevelInfo)
+	logger.ConsoleLevel.Set(slog.LevelInfo)
 
 	var out, errOut bytes.Buffer
 	rootCmd.SetOut(&out)
@@ -31,10 +32,21 @@ func runCmd(t *testing.T, args ...string) (stdout, stderr string, err error) {
 		rootCmd.SetOut(nil)
 		rootCmd.SetErr(nil)
 		rootCmd.SetArgs(nil)
-		logger.LogLevel.Set(slog.LevelInfo)
+		logger.ConsoleLevel.Set(slog.LevelInfo)
+		logger.Close()
 	})
 	err = rootCmd.Execute()
 	return out.String(), errOut.String(), err
+}
+
+// readLogFile returns the contents of the log file in configDir.
+func readLogFile(t *testing.T, configDir string) string {
+	t.Helper()
+	data, err := os.ReadFile(filepath.Join(configDir, LogFile))
+	if err != nil {
+		t.Fatalf("read log file: %v", err)
+	}
+	return string(data)
 }
 
 // captureOutput runs f and returns what it wrote to os.Stdout and to the standard

@@ -2,6 +2,7 @@ package cli
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -71,6 +72,22 @@ func TestIndexVerbosePrintsDocJSON(t *testing.T) {
 	}
 	if !strings.Contains(out, `"path":`) || !strings.Contains(out, "Welcome.md") {
 		t.Errorf("index -v output has no document JSON:\n%s", out)
+	}
+}
+
+func TestIndexWritesLogFile(t *testing.T) {
+	configDir := initVault(t, "obsidian")
+
+	// Debug records reach the log file even without -v.
+	if _, _, err := runIndex(t, "--config-dir", configDir, "vault"); err != nil {
+		t.Fatalf("index: %v", err)
+	}
+	data, err := os.ReadFile(filepath.Join(configDir, LogFile))
+	if err != nil {
+		t.Fatalf("read log file: %v", err)
+	}
+	if !strings.Contains(string(data), `"msg":"walking"`) {
+		t.Errorf("log file has no walking records:\n%s", data)
 	}
 }
 

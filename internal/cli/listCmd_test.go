@@ -27,8 +27,12 @@ func TestListNoRepos(t *testing.T) {
 	if err != nil {
 		t.Fatalf("list: %v", err)
 	}
-	if want := "no repos found in " + configDir + "\n"; out != want {
-		t.Errorf("list output = %q, want %q", out, want)
+	// "no repos found" is a warning on the console log, not list output.
+	if out != "" {
+		t.Errorf("list output = %q, want none", out)
+	}
+	if log := readLogFile(t, configDir); !strings.Contains(log, `"level":"WARN","msg":"no repos found"`) {
+		t.Errorf("log file has no no-repos warning:\n%s", log)
 	}
 }
 
@@ -97,12 +101,14 @@ func TestListSkipsBrokenRepo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	out, errOut, err := runCmd(t, "list", "--config-dir", configDir)
+	out, _, err := runCmd(t, "list", "--config-dir", configDir)
 	if err != nil {
 		t.Fatalf("list: %v", err)
 	}
-	if !strings.Contains(errOut, "warning:") || !strings.Contains(errOut, "broken") {
-		t.Errorf("list stderr = %q, want a warning about repo broken", errOut)
+	// The console handler writes to the real stderr, so check the log file, which
+	// gets the same records.
+	if log := readLogFile(t, configDir); !strings.Contains(log, `"level":"WARN","msg":"could not load repo","repo":"broken"`) {
+		t.Errorf("log file has no warning about repo broken:\n%s", log)
 	}
 	if !strings.Contains(out, "good") || strings.Contains(out, "broken") {
 		t.Errorf("list output should show good but not broken:\n%s", out)

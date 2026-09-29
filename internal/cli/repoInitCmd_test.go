@@ -61,12 +61,17 @@ func TestRepoInitVerbose(t *testing.T) {
 	if err != nil {
 		t.Fatalf("repo init: %v", err)
 	}
+	// Verbose details are Debug logs, not command output.
+	if out != "" {
+		t.Errorf("repo init -v wrote output:\n%s", out)
+	}
+	log := readLogFile(t, configDir)
 	for _, want := range []string{
-		"config dir: " + configDir,
-		"wrote " + filepath.Join(configDir, repo.ReposDir, "notes", repo.ConfigFile),
+		`"config dir":"` + configDir + `"`,
+		`"wrote":"` + filepath.Join(configDir, repo.ReposDir, "notes", repo.ConfigFile) + `"`,
 	} {
-		if !strings.Contains(out, want) {
-			t.Errorf("verbose output missing %q:\n%s", want, out)
+		if !strings.Contains(log, want) {
+			t.Errorf("log file missing %s:\n%s", want, log)
 		}
 	}
 }

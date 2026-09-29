@@ -39,7 +39,7 @@ var indexCmd = &cobra.Command{
 			return err
 		}
 		if verbose {
-			logger.LogLevel.Set(slog.LevelDebug)
+			logger.ConsoleLevel.Set(slog.LevelDebug)
 			logger.Debug("cmd: index", "config dir", cfgDir)
 		}
 
