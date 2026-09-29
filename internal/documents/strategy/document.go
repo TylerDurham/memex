@@ -16,4 +16,7 @@ type DocumentStrategy interface {
 	// LoadChunks reads the chunks from the scanner and loads them 
 	// into the document.
 	LoadChunks(sc bufio.Scanner, doc *documents.Document) error
+
+	Name() string
+	Ext() string
 }

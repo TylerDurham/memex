@@ -29,12 +29,15 @@ func (oi *ObsidianIndexer) Load(doc *documents.Document) error {
 
 func NewObsidianIndexer() *ObsidianIndexer {
 
+	mdStrat := &markdown.MarkdownDocStrategy{}
+
 	i := &ObsidianIndexer{
 		skipDirectories: strategy.SkipDirectories{
 			".obsidian": {},
 		},
+
 		extensions: strategy.Extensions{
-			".md": &markdown.MarkdownDocStrategy{},
+			mdStrat.Ext(): mdStrat,
 		},
 	}
 

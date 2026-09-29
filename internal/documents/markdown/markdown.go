@@ -18,6 +18,16 @@ func (m *MarkdownDocStrategy) LoadChunks(sc bufio.Scanner, doc *documents.Docume
 	return nil
 }
 
+func (m *MarkdownDocStrategy) Name() string {
+	return "Markdown"
+}
+
+func (m *MarkdownDocStrategy) Ext() string {
+	return ".md"
+}
+
 func NewMarkdownDocStrategy() (MarkdownDocStrategy, error) {
 	return MarkdownDocStrategy{}, nil
 }
+
+

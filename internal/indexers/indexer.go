@@ -65,9 +65,11 @@ func Index(repo repo.RepoInfo, idxStrat strategy.IndexStrategy) (IndexResult, er
 			return nil
 		}
 
-		_, docStrat := idxStrat.Extensions()[ext]
+		docStrat, ok := idxStrat.Extensions()[ext]
 
-		if !docStrat {
+		_ = docStrat
+
+		if !ok {
 			// Unknown extension
 			result.Stats.DocsSkipped++
 			logger.Debug("file skipped", "file", path)
