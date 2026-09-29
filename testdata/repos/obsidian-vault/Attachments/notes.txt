@@ -1,0 +1,1 @@
+Plain text attachment. The Obsidian strategy has no .txt handler, so this is skipped.

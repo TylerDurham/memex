@@ -36,6 +36,8 @@ go.work.sum
 *.swp
 *~
 
+temp/
+tmp/
 *.tmp
 *.go.tmp
 scratch/

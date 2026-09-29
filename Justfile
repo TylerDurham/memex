@@ -73,7 +73,7 @@ completions-zsh-clean dir=zsh_completions_dir: unlink
     echo "cleared .zcompdump; run 'exec zsh' to reload completions"
 
 # Run the test suite
-test:
+test: src-env-test
     go test ./...
 
 # Run the test suite with verbose output
@@ -100,3 +100,7 @@ check: fmt vet test
 # Remove build artifacts and coverage output
 clean:
     rm -rf bin coverage.out coverage.html
+
+# setup test ENV
+src-env-test:
+  source ./scripts/src-env-test.sh

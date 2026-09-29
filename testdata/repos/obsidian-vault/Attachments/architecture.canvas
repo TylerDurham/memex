@@ -1,0 +1,9 @@
+{
+  "nodes": [
+    {"id": "cli", "type": "text", "text": "memex CLI", "x": 0, "y": 0, "width": 200, "height": 60},
+    {"id": "idx", "type": "file", "file": "Projects/memex.md", "x": 300, "y": 0, "width": 250, "height": 300}
+  ],
+  "edges": [
+    {"id": "e1", "fromNode": "cli", "fromSide": "right", "toNode": "idx", "toSide": "left"}
+  ]
+}
