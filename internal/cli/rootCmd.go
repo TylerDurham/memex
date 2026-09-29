@@ -30,7 +30,7 @@ func configDir() (string, error) {
 var rootCmd = &cobra.Command{
 	Use:   "memex",
 	Short: "A simple semantic indexing system.",
-	Long: `// TODO: Replace with longer description.`,
+	Long:  `// TODO: Replace with longer description.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },

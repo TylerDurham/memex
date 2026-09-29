@@ -5,8 +5,10 @@ package cli
 
 import (
 	"fmt"
+	"log/slog"
 	"text/tabwriter"
 
+	"github.com/TylerDurham/memex/internal/globals/logger"
 	"github.com/TylerDurham/memex/internal/repo"
 	"github.com/spf13/cobra"
 )
@@ -22,9 +24,10 @@ var listCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+
 		if verbose {
-			fmt.Fprintln(cmd.OutOrStdout(), "list called")
-			fmt.Fprintf(cmd.OutOrStdout(), "config dir: %s\n", cfgDir)
+			logger.LogLevel.Set(slog.LevelDebug)
+			logger.Debug("cmd: repo list", "config dir", cfgDir)
 		}
 
 		names, err := repo.Names(cfgDir)
