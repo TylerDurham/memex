@@ -12,6 +12,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func handleIdxEvent(e indexers.Event) {
+	if e.Kind == indexers.EventDocIndexed {
+		fmt.Printf(" - %s %s\n", e.Kind, e.Path)
+
+	}
+
+	if verbose && e.Kind == indexers.EventDocIndexed {
+		// TODO: Output JSON doc info
+	}
+}
+
 // indexCmd represents the index command
 var indexCmd = &cobra.Command{
 	Use:   "index <repo>",
@@ -45,7 +56,7 @@ var indexCmd = &cobra.Command{
 			Repo:        *repo,
 			IdxStrategy: strat,
 			OnEvent: func(e indexers.Event) {
-				fmt.Printf(" - %s %s\n", e.Kind, e.Path)
+				handleIdxEvent(e)
 			},
 		}
 		var res indexers.IndexResult
