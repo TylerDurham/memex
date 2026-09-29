@@ -13,7 +13,7 @@ import (
 	"github.com/TylerDurham/memex/internal/repo"
 )
 
-func GetStrategy(application string) (strategy.IndexStrategy, error) {
+func GetStrategy(application string) (strategy.IdxStrategy, error) {
 	switch application {
 	case "obsidian":
 		return obsidian.NewObsidianIndexer(), nil
@@ -34,7 +34,7 @@ type IndexResult struct {
 	Stats     IndexStats
 }
 
-func Index(repo repo.RepoInfo, idxStrat strategy.IndexStrategy) (IndexResult, error) {
+func Index(repo repo.RepoInfo, idxStrat strategy.IdxStrategy) (IndexResult, error) {
 
 	result := IndexResult{
 		Stats: IndexStats{

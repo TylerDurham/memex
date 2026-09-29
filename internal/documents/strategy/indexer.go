@@ -6,9 +6,9 @@ import (
 )
 
 type SkipDirectories map[string]struct{}
-type Extensions map[string]DocumentStrategy
+type Extensions map[string]DocStrategy
 
-type IndexStrategy interface {
+type IdxStrategy interface {
 	SkipDirectories() SkipDirectories
 	Extensions() Extensions
 	Load(doc *documents.Document) error

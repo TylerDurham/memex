@@ -6,9 +6,9 @@ import (
 	"github.com/TylerDurham/memex/internal/documents"
 )
 
-// DocumentStrategy is an interface that defines the operations necessary 
+// DocStrategy is an interface that defines the operations necessary 
 // to load properties and semantic indexing chunks from a file.
-type DocumentStrategy interface {
+type DocStrategy interface {
 	// LoadProperties reads the properties from the scanner and loads them
 	// into the document.
 	LoadProperties(sc bufio.Scanner, doc *documents.Document) error
