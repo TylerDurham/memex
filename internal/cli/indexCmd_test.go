@@ -39,8 +39,15 @@ func TestIndexVault(t *testing.T) {
 	if err != nil {
 		t.Fatalf("index: %v", err)
 	}
-	if !strings.Contains(out, "doc-indexed") || !strings.Contains(out, "Welcome.md") {
-		t.Errorf("index output doesn't report Welcome.md as indexed:\n%s", out)
+	vault, err := filepath.Abs(vaultFixture)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Extensions match case-insensitively, so SHOUTING.MD is indexed too.
+	for _, indexed := range []string{"Welcome.md", filepath.Join("Inbox", "SHOUTING.MD")} {
+		if want := "doc-indexed " + filepath.Join(vault, indexed) + "\n"; !strings.Contains(out, want) {
+			t.Errorf("index output doesn't report %s as indexed:\n%s", indexed, out)
+		}
 	}
 	for _, skipped := range []string{"Should Not Be Indexed.md", "notes.txt", "architecture.canvas"} {
 		if strings.Contains(out, skipped) {

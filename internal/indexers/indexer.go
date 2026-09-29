@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
+	"strings"
 
 	"github.com/TylerDurham/memex/internal/documents"
 	"github.com/TylerDurham/memex/internal/globals/logger"
@@ -70,7 +71,8 @@ func IndexDir(req IndexRequest) (IndexResult, error) {
 		}
 
 		baseName := d.Name()
-		ext := filepath.Ext(path)
+		// Extensions keys are lowercase, so match ".MD" to the ".md" strategy.
+		ext := strings.ToLower(filepath.Ext(path))
 
 		if d.IsDir() {
 			if _, skip := idxStrat.SkipDirectories()[baseName]; skip {
@@ -85,6 +87,7 @@ func IndexDir(req IndexRequest) (IndexResult, error) {
 
 		docStrat, ok := idxStrat.Extensions()[ext]
 
+		// TODO: Use the returned doc strategy for the file to load
 		_ = docStrat
 
 		if !ok {
