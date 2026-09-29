@@ -3,6 +3,7 @@ package cli
 
 import (
 	"fmt"
+	"log"
 	"log/slog"
 
 	"github.com/TylerDurham/memex/internal/globals/logger"
@@ -39,10 +40,15 @@ var indexCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		err = indexers.Index(*repo, strat)
+
+		var res indexers.IndexResult
+		res, err = indexers.Index(*repo, strat)
+
 		if err != nil {
 			return fmt.Errorf("could not index: %v", err)
 		}
+
+		log.Printf("%+v", res.Stats)
 		return nil
 	},
 }
