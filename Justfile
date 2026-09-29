@@ -41,7 +41,7 @@ unlink:
     fi
 
 # Install zsh completions into a directory on $fpath (default: zinit's completions dir)
-completions-zsh dir=zsh_completions_dir: build
+completions-zsh dir=zsh_completions_dir: build link
     #!/usr/bin/env bash
     set -euo pipefail
     dir={{ quote(dir) }}
@@ -53,7 +53,7 @@ completions-zsh dir=zsh_completions_dir: build
     echo "cleared .zcompdump; run 'exec zsh' to load the completions"
 
 # Remove the zsh completions installed by completions-zsh
-completions-zsh-clean dir=zsh_completions_dir:
+completions-zsh-clean dir=zsh_completions_dir: unlink
     #!/usr/bin/env bash
     set -euo pipefail
     file={{ quote(dir) }}/_memex
