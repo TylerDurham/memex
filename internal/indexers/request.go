@@ -10,6 +10,7 @@ import (
 type EventKind string
 
 const (
+	EventDocError EventKind = "doc-error"
 	// EventDocIndexing is sent just before a document is indexed.
 	EventDocIndexing EventKind = "doc-indexing"
 	// EventDocIndexed is sent after a document is indexed successfully.
@@ -27,6 +28,8 @@ type Event struct {
 	Path string
 	// Doc is the indexed document. It is set only for EventDocIndexed.
 	Doc *documents.Document
+
+	Err error
 }
 
 type IndexRequest struct {

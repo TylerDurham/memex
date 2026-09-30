@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 )
 
-// GetMimeTypeByExt looks up the mime-type using a file's extension. If the extension is unknown,
+// MIMETypeByExt looks up the mime-type using a file's extension. If the extension is unknown,
 // 'application/octet-stream' is returned as a fallback.
-func GetMimeTypeByExt(ext string) (mimeType string) {
+func MIMETypeByExt(ext string) (mimeType string) {
 	mimeType = mime.TypeByExtension(ext)
 
 	if mimeType == "" {
@@ -16,8 +16,8 @@ func GetMimeTypeByExt(ext string) (mimeType string) {
 	return mimeType
 }
 
-// GetMimeType looks up the mime-type using a file's path. If the extension is unknown,
+// MIMEType looks up the mime-type using a file's path. If the extension is unknown,
 // 'application/octet-stream' is returned as a fallback.
-func GetMimeType(path string) (mimeType string) {
-	return GetMimeTypeByExt(filepath.Ext(path))
+func MIMEType(path string) (mimeType string) {
+	return MIMETypeByExt(filepath.Ext(path))
 }
