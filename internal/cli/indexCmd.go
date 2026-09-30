@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/TylerDurham/memex/internal/globals/logger"
-	"github.com/TylerDurham/memex/internal/indexers"
+	"github.com/TylerDurham/memex/internal/indexer"
 	"github.com/TylerDurham/memex/internal/repo"
 	"github.com/spf13/cobra"
 )
@@ -51,7 +51,7 @@ var indexCmd = &cobra.Command{
 			logger.Debug("cmd: index", "repo dir", repo.Directory)
 		}
 
-		strat, err := indexers.LoadStrategy(repo.Application)
+		strat, err := indexers.Strategy(repo.Application)
 		if err != nil {
 			return err
 		}

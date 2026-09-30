@@ -2,9 +2,12 @@
 package indexers
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -18,9 +21,9 @@ import (
 // IdxStrategy cannot be determine.
 var ErrUnknownApplication = errors.New("unknown application")
 
-// LoadStrategy is a factory function which loads the appropriate
+// Strategy is a factory function which loads the appropriate
 // IdxStrategy for the specified application.
-func LoadStrategy(application string) (strategy.Index, error) {
+func Strategy(application string) (strategy.Index, error) {
 	switch application {
 	case "obsidian":
 		return obsidian.NewObsidianIndexer(), nil
@@ -55,23 +58,63 @@ type IndexResult struct {
 // EventDocError with the error. Each call ends with exactly one of those two
 // events.
 func IndexFile(req FileIndexRequest) (_ documents.Document, err error) {
-	path := strings.TrimSpace(req.FilePath)
+	path := req.FilePath
 
+	req.emit(Event{Kind: EventDocIndexing, Path: path})
 	defer func() {
 		if err != nil {
 			req.emit(Event{Kind: EventDocError, Path: path, Err: err})
 		}
 	}()
 
-	req.emit(Event{Kind: EventDocIndexing, Path: path})
-
 	doc, err := documents.NewDocument(req.Repo, path)
 	if err != nil {
 		return documents.Document{}, err
 	}
 
+	strat, ok := req.IdxStrategy.DocStrategy()[doc.Extension]
+	if !ok {
+		return documents.Document{}, fmt.Errorf("no indexing strategy for extension %q", doc.Extension)
+	}
+
+	if err = loadDoc(&doc, strat); err != nil {
+		return documents.Document{}, err
+	}
+
 	req.emit(Event{Kind: EventDocIndexed, Path: path, Doc: &doc})
 	return doc, nil
+}
+
+// loadDoc reads doc.Path and populates doc's properties and chunks using strat.
+func loadDoc(doc *documents.Document, strat strategy.Doc) error {
+	f, err := os.Open(doc.Path)
+	if err != nil {
+		return fmt.Errorf("open document: %w", err) // *PathError already includes the path
+	}
+	defer f.Close()
+
+	sc := bufio.NewScanner(f)
+	sc.Buffer(make([]byte, 0, 64*1024), 1024*1024) // allow lines up to 1 MiB
+
+	if err := strat.LoadProperties(sc, doc); err != nil {
+		return fmt.Errorf("load properties from %q: %w", doc.Path, err)
+	}
+	if err := strat.LoadChunks(sc, doc); err != nil {
+		return fmt.Errorf("load chunks from %q: %w", doc.Path, err)
+	}
+	if err := sc.Err(); err != nil {
+		return fmt.Errorf("read %q: %w", doc.Path, err)
+	}
+	return nil
+}
+const MaxScanBufferSize = 10 * 1024 * 1024 // Max buffer 10MB
+const InitialScanBufferSize = 64 * 1024    // Initial buff 64KB
+
+// NewScanner returns a line scanner over r sized for long document lines.
+func NewScanner(r io.Reader) *bufio.Scanner {
+	scanner := bufio.NewScanner(r)
+	scanner.Buffer(make([]byte, InitialScanBufferSize), MaxScanBufferSize)
+	return scanner
 }
 
 // IndexDir walks req.Repo.Directory and builds a Document for every file
@@ -86,7 +129,7 @@ func IndexDir(req DirIndexRequest) (IndexResult, error) {
 	rDirPath := req.Repo.Directory
 	strat := req.IdxStrategy
 	skipDirs := strat.SkipDirectories()
-	extensions := strat.Extensions()
+	extensions := strat.DocStrategy()
 
 	var result IndexResult
 

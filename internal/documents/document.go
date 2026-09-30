@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/TylerDurham/memex/internal/repo"
@@ -83,7 +84,7 @@ type Document struct {
 
 	// URI is a link that opens the file in its application
 	// (e.g. an obsidian:// URI). Useful for application
-	// "deeplinks" that register a protocol scheme handler 
+	// "deeplinks" that register a protocol scheme handler
 	// for documents to be opened in the application.
 	URI string `json:"uri"`
 }
@@ -131,7 +132,7 @@ func NewDocument(r repo.RepoInfo, path string) (Document, error) {
 	}
 
 	return Document{
-		Extension: filepath.Ext(path),
+		Extension: strings.ToLower(filepath.Ext(path)),
 		MimeType:  MIMEType(path),
 		ModTime:   fInfo.ModTime(),
 		Path:      path,

@@ -27,9 +27,9 @@ type Index interface {
 	// such as the application's own settings folder.
 	SkipDirectories() SkipDirectories
 
-	// Extensions returns the file types to index and the Doc strategy that
+	// DocStrategy returns the file types to index and the Doc strategy that
 	// reads each one.
-	Extensions() Extensions
+	DocStrategy() Extensions
 
 	// Load fills in the document fields that depend on the application
 	// rather than the file format, such as doc.URI. The indexer calls it

@@ -56,7 +56,7 @@ func TestIndexFile(t *testing.T) {
 		})
 
 		assert.Nil(t, err, "")
-		assert.NotNilf(t, doc,  "doc cannot be nil")
+		assert.NotNilf(t, doc, "doc cannot be nil")
 
 		stat, err := os.Stat(wantPath)
 

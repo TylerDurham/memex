@@ -1,3 +1,4 @@
+// Package obsidian
 package obsidian
 
 import (
@@ -15,7 +16,7 @@ func (oi *ObsidianIndexer) SkipDirectories() strategy.SkipDirectories {
 	return oi.skipDirectories
 }
 
-func (oi *ObsidianIndexer) Extensions() strategy.Extensions {
+func (oi *ObsidianIndexer) DocStrategy() strategy.Extensions {
 	return oi.extensions
 }
 
