@@ -1,6 +1,6 @@
 module github.com/TylerDurham/memex
 
-go 1.26.0
+go 1.27.0
 
 replace golang.org/x/sys => github.com/golang/sys v0.4.0
 

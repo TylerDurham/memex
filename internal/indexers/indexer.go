@@ -54,7 +54,7 @@ type IndexResult struct {
 // when it starts, then either EventDocIndexed with the resulting Document or
 // EventDocError with the error. Each call ends with exactly one of those two
 // events.
-func IndexFile(req IndexRequest) (_ documents.Document, err error) {
+func IndexFile(req FileIndexRequest) (_ documents.Document, err error) {
 	path := strings.TrimSpace(req.FilePath)
 
 	defer func() {
@@ -82,7 +82,7 @@ func IndexFile(req IndexRequest) (_ documents.Document, err error) {
 // with an EventDocError, and the walk continues. IndexDir returns an error
 // only if the directory tree itself cannot be read. In that case the result
 // still holds the documents prepared before the failure.
-func IndexDir(req IndexRequest) (IndexResult, error) {
+func IndexDir(req DirIndexRequest) (IndexResult, error) {
 	rDirPath := req.Repo.Directory
 	strat := req.IdxStrategy
 	skipDirs := strat.SkipDirectories()
@@ -97,6 +97,7 @@ func IndexDir(req IndexRequest) (IndexResult, error) {
 
 		if d.IsDir() {
 			if fPath == rDirPath {
+				// Do not index repo root
 				return nil
 			}
 
@@ -120,9 +121,10 @@ func IndexDir(req IndexRequest) (IndexResult, error) {
 		}
 		_ = docStrat // TODO: use docStrat to load the file
 
-		fileReq := req
-		fileReq.FilePath = fPath
-		doc, err := IndexFile(fileReq)
+		doc, err := IndexFile(FileIndexRequest{
+			IndexOptions: req.IndexOptions,
+			FilePath:     fPath,
+		})
 		if err != nil {
 			// IndexFile has already emitted EventDocError.
 			result.Stats.DocsFailed++

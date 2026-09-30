@@ -56,7 +56,7 @@ var indexCmd = &cobra.Command{
 			return err
 		}
 
-		req := indexers.IndexRequest{
+		req := indexers.DirIndexRequest{
 			Repo:        *repo,
 			IdxStrategy: strat,
 			OnEvent: func(e indexers.Event) {

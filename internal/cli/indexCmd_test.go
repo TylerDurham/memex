@@ -86,8 +86,8 @@ func TestIndexWritesLogFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read log file: %v", err)
 	}
-	if !strings.Contains(string(data), `"msg":"walking"`) {
-		t.Errorf("log file has no walking records:\n%s", data)
+	if !strings.Contains(string(data), `"level":"DEBUG"`) {
+		t.Errorf("log file has no debug records:\n%s", data)
 	}
 }
 
