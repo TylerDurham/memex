@@ -22,7 +22,7 @@ func TestIndexFile(t *testing.T) {
 	walkRootDir := filepath.Join(wantRepoDir, "Projects")
 
 	_, err := repo.Init(configDir, repo.InitOptions{
-		Application: "obsidan",
+		Application: "obsidian",
 		Directory:   wantRepoDir,
 		Name:        repoName,
 	})
@@ -60,13 +60,13 @@ func TestIndexFile(t *testing.T) {
 
 		stat, err := os.Stat(wantPath)
 
-		wantSize := stat.Size()
-		wantModTime := stat.ModTime()
-		wantRel, _ := filepath.Rel(wantRepoDir, wantPath)
-
 		if err != nil {
 			return err
 		}
+
+		wantSize := stat.Size()
+		wantModTime := stat.ModTime()
+		wantRel, _ := filepath.Rel(wantRepoDir, wantPath)
 
 		assert.Equal(t, wantPath, doc.Path)
 		assert.Equal(t, wantSize, doc.Size)
