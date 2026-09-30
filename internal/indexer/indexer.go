@@ -1,5 +1,5 @@
-// Package indexers
-package indexers
+// Package indexer
+package indexer
 
 import (
 	"bufio"
@@ -93,8 +93,7 @@ func loadDoc(doc *documents.Document, strat strategy.Doc) error {
 	}
 	defer f.Close()
 
-	sc := bufio.NewScanner(f)
-	sc.Buffer(make([]byte, 0, 64*1024), 1024*1024) // allow lines up to 1 MiB
+	sc := NewScanner(f)
 
 	if err := strat.LoadProperties(sc, doc); err != nil {
 		return fmt.Errorf("load properties from %q: %w", doc.Path, err)
@@ -107,6 +106,7 @@ func loadDoc(doc *documents.Document, strat strategy.Doc) error {
 	}
 	return nil
 }
+
 const MaxScanBufferSize = 10 * 1024 * 1024 // Max buffer 10MB
 const InitialScanBufferSize = 64 * 1024    // Initial buff 64KB
 

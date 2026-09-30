@@ -13,8 +13,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func handleIdxEvent(e indexers.Event) {
-	if e.Kind == indexers.EventDocIndexed {
+func handleIdxEvent(e indexer.Event) {
+	if e.Kind == indexer.EventDocIndexed {
 		fmt.Printf(" - %s %s\n", e.Kind, e.Path)
 		if verbose {
 			json, err := e.Doc.ToJSONString()
@@ -51,20 +51,20 @@ var indexCmd = &cobra.Command{
 			logger.Debug("cmd: index", "repo dir", repo.Directory)
 		}
 
-		strat, err := indexers.Strategy(repo.Application)
+		strat, err := indexer.Strategy(repo.Application)
 		if err != nil {
 			return err
 		}
 
-		req := indexers.DirIndexRequest{
+		req := indexer.DirIndexRequest{
 			Repo:        *repo,
 			IdxStrategy: strat,
-			OnEvent: func(e indexers.Event) {
+			OnEvent: func(e indexer.Event) {
 				handleIdxEvent(e)
 			},
 		}
-		var res indexers.IndexResult
-		res, err = indexers.IndexDir(req)
+		var res indexer.IndexResult
+		res, err = indexer.IndexDir(req)
 
 		if err != nil {
 			return fmt.Errorf("could not index: %v", err)

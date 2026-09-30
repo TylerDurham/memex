@@ -1,4 +1,4 @@
-package indexers
+package indexer
 
 import (
 	"io/fs"
