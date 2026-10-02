@@ -1,12 +1,11 @@
 package indexer
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/TylerDurham/memex/internal/documents"
+	"github.com/TylerDurham/memex/internal/repo"
 	"github.com/TylerDurham/memex/internal/strategy"
 )
 
@@ -57,12 +56,13 @@ func loadDoc(doc *documents.Document, strat strategy.DocParser) error {
 	return err
 }
 
-const MaxScanBufferSize = 10 * 1024 * 1024 // Max buffer 10MB
-const InitialScanBufferSize = 64 * 1024    // Initial buff 64KB
+// // NewScanner returns a line scanner over r sized for long document lines.
+// func NewScanner(r io.Reader) *bufio.Scanner {
+// 	scanner := bufio.NewScanner(r)
+// 	scanner.Buffer(make([]byte, InitialScanBufferSize), MaxScanBufferSize)
+// 	return scanner
+// }
 
-// NewScanner returns a line scanner over r sized for long document lines.
-func NewScanner(r io.Reader) *bufio.Scanner {
-	scanner := bufio.NewScanner(r)
-	scanner.Buffer(make([]byte, InitialScanBufferSize), MaxScanBufferSize)
-	return scanner
+func ParseFile(repo repo.RepoInfo, path string, parser strategy.DocParser) {
+
 }

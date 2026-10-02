@@ -3,6 +3,7 @@ package indexer
 import (
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/TylerDurham/memex/internal/documents"
 	"github.com/TylerDurham/memex/internal/strategy/obsidian"
@@ -30,6 +31,7 @@ import (
 // }
 //
 
+// TestIndexFile checks a document.
 func TestIndexFile(t *testing.T) {
 	wantAppType := "obsidian"
 	r := testutil.MustLoadRepoInfo(t, wantAppType)
@@ -37,23 +39,42 @@ func TestIndexFile(t *testing.T) {
 	wantAbs := filepath.Join(r.Directory, "Projects/memex.md")
 	wantfi := testutil.MustStat(t, wantAbs)
 	wantMIMEType := documents.MIMEType(wantAbs)
+	wantPropTitle := "memex"
+	wantPropTags := []string{"project", "go"}
 
 	doc, err := IndexFile(FileIndexRequest{
-		Repo:        *r,
+		Repo:         *r,
 		RepoStrategy: obsidian.NewObsidianIndexer(),
-		FilePath:    wantAbs,
+		FilePath:     wantAbs,
 	})
 
 	if err != nil {
 		t.Fatalf("could not index document '%s': %v", wantAbs, err)
 	}
 
-	assert.NotNilf(t, doc, "doc should not be nil")
+	// # file info checks
+	assert.NotNil(t, doc)
 	assert.Equal(t, wantAbs, doc.Abs)
 	assert.Equal(t, wantAppType, doc.AppType)
 	assert.Equal(t, wantfi.Size(), doc.Size)
 	assert.Equal(t, wantfi.ModTime(), doc.ModTime)
 	assert.Equal(t, wantMIMEType, doc.MIMEType)
+
+	// # property/frontmatter checks
+	// - basic string
+	assert.Equal(t, wantPropTitle, doc.Properties["title"])
+	
+	// - boolean
+	assert.Equal(t, false, doc.Properties["archived"])
+
+	// - slices
+	for _, tag := range wantPropTags {
+		assert.Contains(t, doc.Properties["tags"], tag)
+	}
+
+	// - date/times
+	wantTime, _ := time.Parse(time.DateOnly, "2026-09-01")
+	assert.Equal(t, wantTime, doc.Properties["created"])
 
 }
 
