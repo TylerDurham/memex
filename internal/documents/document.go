@@ -57,8 +57,8 @@ type Document struct {
 	// Extension is the file extension, including the leading dot (e.g. ".md").
 	Extension string `json:"extension"`
 
-	// MimeType is the detected media type of the file (e.g. "text/markdown").
-	MimeType string `json:"mimeType"`
+	// MIMEType is the detected media type of the file (e.g. "text/markdown").
+	MIMEType string `json:"mimeType"`
 
 	// ModTime is the file's last modification time at the time it was indexed.
 	ModTime time.Time `json:"modTime"`
@@ -134,7 +134,7 @@ func NewDocument(r repo.RepoInfo, path string) (Document, error) {
 	return Document{
 		AppType: r.AppType,
 		Extension: strings.ToLower(filepath.Ext(path)),
-		MimeType:  MIMEType(path),
+		MIMEType:  MIMEType(path),
 		ModTime:   fInfo.ModTime(),
 		Abs:      path,
 		RelPath:   relPath,

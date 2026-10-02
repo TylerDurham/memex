@@ -53,7 +53,7 @@ func TestIndexFile(t *testing.T) {
 	assert.Equal(t, wantAppType, doc.AppType)
 	assert.Equal(t, wantfi.Size(), doc.Size)
 	assert.Equal(t, wantfi.ModTime(), doc.ModTime)
-	assert.Equal(t, wantMIMEType, doc.MimeType)
+	assert.Equal(t, wantMIMEType, doc.MIMEType)
 
 }
 
