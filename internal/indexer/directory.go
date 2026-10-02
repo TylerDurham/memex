@@ -57,7 +57,7 @@ type IndexResult struct {
 // still holds the documents prepared before the failure.
 func IndexDir(req DirIndexRequest) (IndexResult, error) {
 	rDirPath := req.Repo.Directory
-	strat := req.IdxStrategy
+	strat := req.RepoStrategy
 	skipDirs := strat.SkipDirectories()
 	extensions := strat.DocStrategy()
 

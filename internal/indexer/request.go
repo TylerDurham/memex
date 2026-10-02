@@ -38,9 +38,9 @@ type Event struct {
 type IndexOptions struct {
 	// Repo is the repository being indexed.
 	Repo repo.RepoInfo
-	// IdxStrategy decides which files are indexed and which directories are
+	// RepoStrategy decides which files are indexed and which directories are
 	// skipped.
-	IdxStrategy strategy.Index
+	RepoStrategy strategy.Index
 
 	// OnEvent, if set, is called for each Event as indexing progresses. It
 	// runs synchronously on the indexing goroutine, so a slow handler slows

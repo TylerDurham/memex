@@ -32,7 +32,7 @@ func IndexFile(req FileIndexRequest) (_ documents.Document, err error) {
 		return documents.Document{}, err
 	}
 
-	strat, ok := req.IdxStrategy.DocStrategy()[doc.Extension]
+	strat, ok := req.RepoStrategy.DocStrategy()[doc.Extension]
 	if !ok {
 		return documents.Document{}, fmt.Errorf("no indexing strategy for extension %q", doc.Extension)
 	}

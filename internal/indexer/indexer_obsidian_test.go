@@ -37,7 +37,7 @@ func TestIndexFile(t *testing.T) {
 
 	doc, err := IndexFile(FileIndexRequest{
 		Repo:        *r,
-		IdxStrategy: obsidian.NewObsidianIndexer(),
+		RepoStrategy: obsidian.NewObsidianIndexer(),
 		FilePath:    wantAbs,
 	})
 
