@@ -13,7 +13,7 @@ type SkipDirectories map[string]struct{}
 // Extensions maps a file extension, in the form Doc.Ext returns, to the
 // Doc strategy that handles files with that extension. Files whose
 // extension has no entry are skipped.
-type Extensions map[string]Doc
+type Extensions map[string]DocParser
 
 // Index adapts indexing to the application that owns a repo, such as
 // Obsidian. It decides which parts of the repo are walked and which

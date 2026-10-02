@@ -32,7 +32,7 @@ func TestRepoInitDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	if cfg.Name != "My-Vault" || cfg.Application != "obsidian" || cfg.Directory != dir {
+	if cfg.Name != "My-Vault" || cfg.AppType != "obsidian" || cfg.Directory != dir {
 		t.Errorf("Load = %+v, want name My-Vault, application obsidian, directory %q", *cfg, dir)
 	}
 }
@@ -49,7 +49,7 @@ func TestRepoInitFlags(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	if cfg.Name != "notes" || cfg.Application != "markdown" || cfg.Directory != dir {
+	if cfg.Name != "notes" || cfg.AppType != "markdown" || cfg.Directory != dir {
 		t.Errorf("Load = %+v, want name notes, application markdown, directory %q", *cfg, dir)
 	}
 }

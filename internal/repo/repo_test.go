@@ -25,7 +25,7 @@ func TestInitThenLoad(t *testing.T) {
 		t.Fatalf("Load: %v", err)
 	}
 	want := RepoInfo{
-		Application: "obsidian",
+		AppType: "obsidian",
 		Name:        "My-Vault",
 		Directory:   dir,
 		ConfigFile:  path,

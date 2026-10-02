@@ -11,7 +11,7 @@ import (
 )
 
 // vaultFixture is the sample Obsidian vault in testdata.
-var vaultFixture = filepath.Join("..", "..", "testdata", "repos", "obsidian-vault")
+var vaultFixture = filepath.Join("..", "..", "testdata", "repos", "obsidian")
 
 // initVault creates a repo named vault in a new config directory, pointing at the
 // fixture vault, and returns the config directory.

@@ -76,7 +76,7 @@ func printRepoListAsTable(w io.Writer, repos []*repo.RepoInfo) error {
 	tabW := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
 	fmt.Fprintln(tabW, "NAME\tAPPLICATION\tDIRECTORY\tCONFIG\tDB")
 	for _, cfg := range repos {
-		fmt.Fprintf(tabW, "%s\t%s\t%s\t%s\t%s\n", cfg.Name, cfg.Application, cfg.Directory, cfg.ConfigFile, cfg.Database)
+		fmt.Fprintf(tabW, "%s\t%s\t%s\t%s\t%s\n", cfg.Name, cfg.AppType, cfg.Directory, cfg.ConfigFile, cfg.Database)
 	}
 	return tabW.Flush()
 }

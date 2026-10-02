@@ -46,9 +46,9 @@ type Properties map[string]any
 // the file's content, split into Chunks, with the metadata needed to filter
 // search results and trace them back to the original file.
 type Document struct {
-	// Application identifies the application the file belongs to or opens
+	// AppType identifies the application the file belongs to or opens
 	// with, such as "obsidian" "acrobat", etc.
-	Application string `json:"application"`
+	AppType string `json:"appType"`
 
 	// Chunks holds the file's content split into indexable sections,
 	// in document order.
@@ -132,6 +132,7 @@ func NewDocument(r repo.RepoInfo, path string) (Document, error) {
 	}
 
 	return Document{
+		AppType: r.AppType,
 		Extension: strings.ToLower(filepath.Ext(path)),
 		MimeType:  MIMEType(path),
 		ModTime:   fInfo.ModTime(),

@@ -26,7 +26,7 @@ func reposDir(configDir string) string {
 
 // RepoInfo is the contents of a repo's config.yaml.
 type RepoInfo struct {
-	Application string `json:"application" yaml:"application"`
+	AppType string `json:"application" yaml:"application"`
 	Name        string `json:"name" yaml:"name"`
 
 	// Directory is the absolute path to the repository directory.
@@ -88,7 +88,7 @@ func Init(configDir string, opts InitOptions) (string, error) {
 		return "", err
 	}
 
-	data, err := yaml.Marshal(RepoInfo{Application: opts.Application, Name: name, Directory: directory})
+	data, err := yaml.Marshal(RepoInfo{AppType: opts.Application, Name: name, Directory: directory})
 	if err != nil {
 		return "", err
 	}
