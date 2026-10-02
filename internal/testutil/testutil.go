@@ -10,8 +10,8 @@ import (
 
 const testDataDir = "../../testdata/repos"
 
-// LoadTestRepoInfo loads a repo for testing.
-func LoadTestRepoInfo(t *testing.T, appType string) (r *repo.RepoInfo) {
+// MustLoadRepoInfo loads a repo for testing.
+func MustLoadRepoInfo(t *testing.T, appType string) (r *repo.RepoInfo) {
 	t.Helper()
 	name := appType + "-vault"
 	configDir := filepath.Join(t.TempDir(), ".config", "memex")
