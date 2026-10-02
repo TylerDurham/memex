@@ -10,17 +10,31 @@ import (
 type EventKind string
 
 const (
-	// EventDocError is sent when a document fails to index. Event.Err holds
-	// the error.
-	EventDocError EventKind = "doc-error"
-	// EventDocIndexing is sent just before a document is indexed.
-	EventDocIndexing EventKind = "doc-indexing"
-	// EventDocIndexed is sent after a document is indexed successfully.
-	EventDocIndexed EventKind = "doc-indexed"
-	// EventDocSkipped is sent for a file whose extension has no strategy.Doc.
-	EventDocSkipped EventKind = "doc-skipped"
+	// EventFileIndexing is sent just before a document is indexed.
+	EvenFileEmbedded EventKind = "file-embedded"
+
+	EventDirIndexed EventKind = "dir-indexed"
+	EventDirIndexing EventKind = "dir-indexing"
+
 	// EventDirSkipped is sent for a directory listed in SkipDirectories.
 	EventDirSkipped EventKind = "dir-skipped"
+
+	EventFileEmbedding EventKind = "file-embedding"
+
+	// EventFileError is sent when a document fails to index. Event.Err holds
+	// the error
+	EventFileError EventKind = "file-error"
+
+	// EventFileIndexed is sent after a document is indexed successfully.
+	EventFileIndexed EventKind = "file-indexed"
+	EventFileIndexing EventKind = "file-indexing"
+	EventFileParsed EventKind = "file-parsed"
+	EventFileParsing EventKind = "file-parsing"
+
+	// EventFileSkipped is sent for a file whose extension has no strategy.Doc.
+	EventFileSkipped EventKind = "file-skipped"
+	EventFileStored EventKind = "file-stored"
+	EventFileStoring EventKind = "file-storing"
 )
 
 // Event reports progress during indexing.

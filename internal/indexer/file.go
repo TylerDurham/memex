@@ -19,10 +19,10 @@ import (
 func IndexFile(req FileIndexRequest) (_ documents.Document, err error) {
 	path := req.FilePath
 
-	req.emit(Event{Kind: EventDocIndexing, Path: path})
+	req.emit(Event{Kind: EventFileIndexing, Path: path})
 	defer func() {
 		if err != nil {
-			req.emit(Event{Kind: EventDocError, Path: path, Err: err})
+			req.emit(Event{Kind: EventFileError, Path: path, Err: err})
 		}
 	}()
 
@@ -40,7 +40,7 @@ func IndexFile(req FileIndexRequest) (_ documents.Document, err error) {
 		return documents.Document{}, err
 	}
 
-	req.emit(Event{Kind: EventDocIndexed, Path: path, Doc: &doc})
+	req.emit(Event{Kind: EventFileIndexed, Path: path, Doc: &doc})
 	return doc, nil
 }
 
@@ -56,13 +56,14 @@ func loadDoc(doc *documents.Document, strat strategy.DocParser) error {
 	return err
 }
 
-// // NewScanner returns a line scanner over r sized for long document lines.
-// func NewScanner(r io.Reader) *bufio.Scanner {
-// 	scanner := bufio.NewScanner(r)
-// 	scanner.Buffer(make([]byte, InitialScanBufferSize), MaxScanBufferSize)
-// 	return scanner
-// }
+func FileParse(repo repo.RepoInfo, path string, parser strategy.DocParser) {
 
-func ParseFile(repo repo.RepoInfo, path string, parser strategy.DocParser) {
+}
+
+func FileEmbed() {
+
+}
+
+func FileStore() {
 
 }

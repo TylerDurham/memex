@@ -46,7 +46,7 @@ func TestIndexVault(t *testing.T) {
 	}
 	// Extensions match case-insensitively, so SHOUTING.MD is indexed too.
 	for _, indexed := range []string{"Welcome.md", filepath.Join("Inbox", "SHOUTING.MD")} {
-		if want := "doc-indexed " + filepath.Join(vault, indexed) + "\n"; !strings.Contains(out, want) {
+		if want := "file-indexed " + filepath.Join(vault, indexed) + "\n"; !strings.Contains(out, want) {
 			t.Errorf("index output doesn't report %s as indexed:\n%s", indexed, out)
 		}
 	}

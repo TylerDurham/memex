@@ -14,7 +14,7 @@ import (
 )
 
 func handleIdxEvent(e indexer.Event) {
-	if e.Kind == indexer.EventDocIndexed {
+	if e.Kind == indexer.EventFileIndexed {
 		fmt.Printf(" - %s %s\n", e.Kind, e.Path)
 		if verbose {
 			json, err := e.Doc.ToJSONString()

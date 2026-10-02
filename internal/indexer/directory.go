@@ -89,7 +89,7 @@ func IndexDir(req DirIndexRequest) (IndexResult, error) {
 		if !ok {
 			result.Stats.DocsSkipped++
 			logger.Debug("file skipped", "file", fPath)
-			req.emit(Event{Kind: EventDocSkipped, Path: fPath})
+			req.emit(Event{Kind: EventFileSkipped, Path: fPath})
 			return nil
 		}
 		_ = docStrat // TODO: use docStrat to load the file
