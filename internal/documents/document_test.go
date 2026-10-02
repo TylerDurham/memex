@@ -7,7 +7,7 @@ import (
 
 func TestToJSONString(t *testing.T) {
 	doc := Document{
-		Path:       "/vault/note.md",
+		Abs:       "/vault/note.md",
 		Chunks:     []Chunk{{Text: "hello", HeadingPath: []string{"Intro"}, StartLine: 1, EndLine: 3}},
 		Properties: Properties{"tags": []string{"go"}},
 	}

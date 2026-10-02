@@ -49,7 +49,7 @@ func TestIndexFile(t *testing.T) {
 	}
 
 	assert.NotNilf(t, doc, "doc should not be nil")
-	assert.Equal(t, wantAbs, doc.Path)
+	assert.Equal(t, wantAbs, doc.Abs)
 	assert.Equal(t, wantAppType, doc.AppType)
 	assert.Equal(t, wantfi.Size(), doc.Size)
 	assert.Equal(t, wantfi.ModTime(), doc.ModTime)

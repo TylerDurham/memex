@@ -47,7 +47,7 @@ func IndexFile(req FileIndexRequest) (_ documents.Document, err error) {
 
 // loadDoc reads doc.Path and populates doc's properties and chunks using strat.
 func loadDoc(doc *documents.Document, strat strategy.DocParser) error {
-	f, err := os.ReadFile(doc.Path)
+	f, err := os.ReadFile(doc.Abs)
 	if err != nil {
 		return fmt.Errorf("open document: %w", err) // *PathError already includes the path
 	}

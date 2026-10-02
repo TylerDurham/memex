@@ -66,8 +66,8 @@ type Document struct {
 	// Name is the file's base name, including its extension.
 	Name string `json:"name"`
 
-	// Path is the absolute path to the file on disk.
-	Path string `json:"path"`
+	// Abs is the absolute path to the file on disk.
+	Abs string `json:"path"`
 
 	// Properties holds document-level metadata, such as parsed front matter.
 	Properties Properties `json:"properties"`
@@ -136,7 +136,7 @@ func NewDocument(r repo.RepoInfo, path string) (Document, error) {
 		Extension: strings.ToLower(filepath.Ext(path)),
 		MimeType:  MIMEType(path),
 		ModTime:   fInfo.ModTime(),
-		Path:      path,
+		Abs:      path,
 		RelPath:   relPath,
 		Repo:      r,
 		Size:      fInfo.Size(),
