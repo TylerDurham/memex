@@ -2,6 +2,7 @@
 package testutil
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -9,6 +10,15 @@ import (
 )
 
 const testDataDir = "../../testdata/repos"
+
+func MustStat(t *testing.T, path string) os.FileInfo {
+	stat, err := os.Stat(path)
+	if err != nil {
+		t.Fatalf("could not stat '%s': %s", path, err)
+	}
+
+	return stat
+} 
 
 // MustLoadRepoInfo loads a repo for testing.
 func MustLoadRepoInfo(t *testing.T, appType string) (r *repo.RepoInfo) {

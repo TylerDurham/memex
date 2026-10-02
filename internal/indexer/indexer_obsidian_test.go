@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/TylerDurham/memex/internal/documents"
 	"github.com/TylerDurham/memex/internal/strategy/obsidian"
 	"github.com/TylerDurham/memex/internal/testutil"
 	"github.com/stretchr/testify/assert"
@@ -34,6 +35,8 @@ func TestIndexFile(t *testing.T) {
 	r := testutil.MustLoadRepoInfo(t, wantAppType)
 
 	wantAbs := filepath.Join(r.Directory, "Projects/memex.md")
+	wantfi := testutil.MustStat(t, wantAbs)
+	wantMIMEType := documents.MIMEType(wantAbs)
 
 	doc, err := IndexFile(FileIndexRequest{
 		Repo:        *r,
@@ -48,6 +51,9 @@ func TestIndexFile(t *testing.T) {
 	assert.NotNilf(t, doc, "doc should not be nil")
 	assert.Equal(t, wantAbs, doc.Path)
 	assert.Equal(t, wantAppType, doc.AppType)
+	assert.Equal(t, wantfi.Size(), doc.Size)
+	assert.Equal(t, wantfi.ModTime(), doc.ModTime)
+	assert.Equal(t, wantMIMEType, doc.MimeType)
 
 }
 
