@@ -68,7 +68,7 @@ func init() {
 
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.memex.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
-	rootCmd.PersistentFlags().StringVar(&configDirFlag, "config-dir", "", "config directory (default is $"+config.EnvConfigDir+", else $XDG_CONFIG_HOME/memex or ~/.config/memex, or %AppData%\\memex on Windows)")
+	rootCmd.PersistentFlags().StringVar(&configDirFlag, "config-dir", "", "config directory (default is $"+config.EnvMemexConfigDir+", else $XDG_CONFIG_HOME/memex or ~/.config/memex, or %AppData%\\memex on Windows)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.

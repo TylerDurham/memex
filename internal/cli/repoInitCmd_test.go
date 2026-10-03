@@ -4,7 +4,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-	"weak"
 
 	"github.com/TylerDurham/memex/internal/config"
 	"github.com/TylerDurham/memex/internal/repo"
@@ -83,13 +82,13 @@ func TestRepoInitVerbose(t *testing.T) {
 
 func TestRepoInitConfigDirFromEnv(t *testing.T) {
 	configDir := t.TempDir()
-	t.Setenv(config.EnvConfigDir, configDir)
+	t.Setenv(config.EnvMemexConfigDir, configDir)
 
 	if _, err := runRepoInit(t, "-n", "notes", t.TempDir()); err != nil {
 		t.Fatalf("repo init: %v", err)
 	}
 	if _, err := repo.LoadWithConfigDir(configDir, "notes"); err != nil {
-		t.Errorf("Load from $%s: %v", config.EnvConfigDir, err)
+		t.Errorf("Load from $%s: %v", config.EnvMemexConfigDir, err)
 	}
 }
 

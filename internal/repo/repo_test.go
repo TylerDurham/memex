@@ -16,7 +16,7 @@ func TestInitThenLoad(t *testing.T) {
 	wantConfigDir := t.TempDir()
 	dir := filepath.Join(t.TempDir(), wantVaultName)
 
-	t.Setenv(config.EnvConfigDir, wantConfigDir)
+	t.Setenv(config.EnvMemexConfigDir, wantConfigDir)
 	repoConfig, err := InitWithConfigDir(wantConfigDir, InitOptions{Name: wantVaultName, Directory: dir, Application: wantAppType})
 	if err != nil {
 		t.Fatalf("Init: %v", err)
