@@ -18,7 +18,7 @@ var vaultFixture = filepath.Join("..", "..", "testdata", "repos", "obsidian")
 func initVault(t *testing.T, application string) string {
 	t.Helper()
 	configDir := t.TempDir()
-	if _, err := repo.Init(configDir, repo.InitOptions{Directory: vaultFixture, Name: "vault", Application: application}); err != nil {
+	if _, err := repo.InitWithConfigDir(configDir, repo.InitOptions{Directory: vaultFixture, Name: "vault", Application: application}); err != nil {
 		t.Fatalf("Init: %v", err)
 	}
 	return configDir

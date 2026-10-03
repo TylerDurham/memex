@@ -34,7 +34,7 @@ import (
 // TestIndexFile checks a document.
 func TestIndexFile(t *testing.T) {
 	wantAppType := "obsidian"
-	r := testutil.MustLoadRepoInfo(t, wantAppType)
+	r := testutil.TestRepoConfigInfo(t, wantAppType)
 
 	wantAbs := filepath.Join(r.Directory, "Projects/memex.md")
 	wantfi := testutil.MustStat(t, wantAbs)

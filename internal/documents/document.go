@@ -77,7 +77,7 @@ type Document struct {
 
 	// Repo describes the version-control repository containing the file,
 	// if any.
-	Repo repo.RepoInfo `json:"repo"`
+	Repo repo.RepoConfigInfo `json:"repo"`
 
 	// Size is the file size in bytes.
 	Size int64 `json:"size"`
@@ -114,7 +114,7 @@ var ErrNotARepoFile = errors.New("file not under repo path")
 //
 // NewDocument returns an error wrapping ErrNotRegularFile if path is not a
 // regular file, and ErrNotARepoFile if path is outside the repository.
-func NewDocument(r repo.RepoInfo, path string) (Document, error) {
+func NewDocument(r repo.RepoConfigInfo, path string) (Document, error) {
 	fInfo, err := os.Stat(path)
 	if err != nil {
 		return Document{}, err // os.Stat's error already includes the path

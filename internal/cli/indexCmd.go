@@ -43,7 +43,7 @@ var indexCmd = &cobra.Command{
 			logger.Debug("cmd: index", "config dir", cfgDir)
 		}
 
-		repo, err := repo.Load(cfgDir, name)
+		repo, err := repo.LoadWithConfigDir(cfgDir, name)
 		if err != nil {
 			return err
 		}

@@ -14,7 +14,7 @@ import (
 func initRepos(t *testing.T, configDir string, names ...string) {
 	t.Helper()
 	for _, name := range names {
-		if _, err := repo.Init(configDir, repo.InitOptions{Directory: t.TempDir(), Name: name, Application: "obsidian"}); err != nil {
+		if _, err := repo.InitWithConfigDir(configDir, repo.InitOptions{Directory: t.TempDir(), Name: name, Application: "obsidian"}); err != nil {
 			t.Fatalf("Init(%q): %v", name, err)
 		}
 	}
@@ -80,7 +80,7 @@ func TestListJSON(t *testing.T) {
 	if err != nil {
 		t.Fatalf("list -j: %v", err)
 	}
-	var repos []repo.RepoInfo
+	var repos []repo.RepoConfigInfo
 	if err := json.Unmarshal([]byte(out), &repos); err != nil {
 		t.Fatalf("list -j output isn't a JSON array of repos: %v\n%s", err, out)
 	}

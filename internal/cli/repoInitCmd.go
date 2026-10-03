@@ -30,7 +30,7 @@ var repoInitCmd = &cobra.Command{
 			logger.Debug("cmd: repo init", "config dir", cfgDir)
 		}
 
-		path, err := repo.Init(cfgDir, repo.InitOptions{
+		path, err := repo.InitWithConfigDir(cfgDir, repo.InitOptions{
 			Directory:   directory,
 			Name:        repoInitName,
 			Application: repoInitApplication,

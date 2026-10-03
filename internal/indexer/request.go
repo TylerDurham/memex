@@ -51,7 +51,7 @@ type Event struct {
 // IndexOptions holds the settings shared by every index request.
 type IndexOptions struct {
 	// Repo is the repository being indexed.
-	Repo repo.RepoInfo
+	Repo repo.RepoConfigInfo
 	// RepoStrategy decides which files are indexed and which directories are
 	// skipped.
 	RepoStrategy strategy.Index

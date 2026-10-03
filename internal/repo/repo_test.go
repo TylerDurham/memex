@@ -6,37 +6,42 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/TylerDurham/memex/internal/config"
 )
 
 func TestInitThenLoad(t *testing.T) {
-	configDir := t.TempDir()
-	dir := filepath.Join(t.TempDir(), "My-Vault")
+	const wantVaultName = "My-Vault"
+	const wantAppType = "obsidian"
+	wantConfigDir := t.TempDir()
+	dir := filepath.Join(t.TempDir(), wantVaultName)
 
-	path, err := Init(configDir, InitOptions{Directory: dir, Application: "obsidian"})
+	t.Setenv(config.EnvConfigDir, wantConfigDir)
+	repoConfig, err := InitWithConfigDir(wantConfigDir, InitOptions{Name: wantVaultName, Directory: dir, Application: wantAppType})
 	if err != nil {
 		t.Fatalf("Init: %v", err)
 	}
-	if want := filepath.Join(configDir, ReposDir, "My-Vault", ConfigFile); path != want {
-		t.Errorf("Init path = %q, want %q", path, want)
+	if wantConfigFile := filepath.Join(wantConfigDir, ReposDir, wantVaultName, ConfigFile); repoConfig.ConfigFile != wantConfigFile {
+		t.Errorf("Init path = %q, want %q", repoConfig, wantConfigFile)
 	}
 
-	cfg, err := Load(configDir, "My-Vault")
+	cfg, err := LoadWithConfigDir(wantConfigDir, "My-Vault")
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	want := RepoInfo{
+	want := RepoConfigInfo{
 		AppType: "obsidian",
 		Name:        "My-Vault",
 		Directory:   dir,
-		ConfigFile:  path,
-		Database:    filepath.Join(configDir, ReposDir, "My-Vault", "memex.db"),
+		ConfigFile:  repoConfig.ConfigFile,
+		Database:    filepath.Join(wantConfigDir, ReposDir, wantVaultName, "memex.db"),
 	}
 	if cfg != want {
 		t.Errorf("Load = %+v, want %+v", cfg, want)
 	}
 
 	// Derived fields must not be written to config.yaml.
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(repoConfig.ConfigFile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,7 +51,7 @@ func TestInitThenLoad(t *testing.T) {
 }
 
 func TestLoadNotFound(t *testing.T) {
-	_, err := Load(t.TempDir(), "missing")
+	_, err := LoadWithConfigDir(t.TempDir(), "missing")
 	if !errors.Is(err, ErrNotFound) {
 		t.Errorf("Load error = %v, want ErrNotFound", err)
 	}
@@ -54,7 +59,7 @@ func TestLoadNotFound(t *testing.T) {
 
 func TestLoadInvalidName(t *testing.T) {
 	for _, name := range []string{"", ".", "..", "a/b", `a\b`} {
-		if _, err := Load(t.TempDir(), name); err == nil || errors.Is(err, ErrNotFound) {
+		if _, err := LoadWithConfigDir(t.TempDir(), name); err == nil || errors.Is(err, ErrNotFound) {
 			t.Errorf("Load(%q) error = %v, want invalid name error", name, err)
 		}
 	}
@@ -63,7 +68,7 @@ func TestLoadInvalidName(t *testing.T) {
 func TestNames(t *testing.T) {
 	configDir := t.TempDir()
 	for _, name := range []string{"zeta", "alpha"} {
-		if _, err := Init(configDir, InitOptions{Directory: t.TempDir(), Name: name}); err != nil {
+		if _, err := InitWithConfigDir(configDir, InitOptions{Directory: t.TempDir(), Name: name}); err != nil {
 			t.Fatalf("Init(%q): %v", name, err)
 		}
 	}
@@ -99,7 +104,7 @@ func TestLoadBadYAML(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(configDir, ReposDir, "broken", ConfigFile), []byte("name: [unclosed"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := Load(configDir, "broken"); err == nil {
+	if _, err := LoadWithConfigDir(configDir, "broken"); err == nil {
 		t.Error("Load of malformed config.yaml succeeded, want error")
 	}
 }

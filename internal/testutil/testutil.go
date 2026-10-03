@@ -18,21 +18,32 @@ func MustStat(t *testing.T, path string) os.FileInfo {
 	}
 
 	return stat
-} 
+}
 
-// MustLoadRepoInfo loads a repo for testing.
-func MustLoadRepoInfo(t *testing.T, appType string) (repo.RepoInfo) {
+// TestRepoConfigInfo loads a repo for testing. It initializes a new instance within
+// a temporary directory loads that instance.
+// NOTE: If there are any errors initializing or loading the instance, it fails all tests
+// and shuts the test runner down.
+func TestRepoConfigInfo(t *testing.T, appType string) repo.RepoConfigInfo {
+	// testrunner should not treat as a test
 	t.Helper()
-	name := appType + "-vault"
-	configDir := filepath.Join(t.TempDir(), ".config", "memex")
+
+	// generate a real, but temporary config directory
+	tmpConfigDir := filepath.Join(t.TempDir(), ".config", "memex")
+
+	// we need a repo name; generate it
+	newRepoName := appType + "-vault"
+
+	// Calculate path to actual repo
 	path, err := filepath.Abs("../../testdata/repos/" + appType)
 	if err != nil {
 		t.Fatalf("could not find testdata directory '%s': %v", testDataDir, err)
 	}
 
-	_, err = repo.Init(configDir, repo.InitOptions{
+	// initialize our repo
+	_, err = repo.InitWithConfigDir(tmpConfigDir, repo.InitOptions{
 		Application: appType,
-		Name:        name,
+		Name:        newRepoName,
 		Directory:   path,
 	})
 
@@ -40,10 +51,11 @@ func MustLoadRepoInfo(t *testing.T, appType string) (repo.RepoInfo) {
 		t.Fatalf("could not init repo: %v", err)
 	}
 
-	r, err := repo.Load(configDir, name)
+	// load our repo, by name
+	repoConfig, err := repo.LoadWithConfigDir(tmpConfigDir, newRepoName)
 
 	if err != nil {
 		t.Fatalf("could not load repo: %v", err)
 	}
-	return r
+	return repoConfig
 }

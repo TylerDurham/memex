@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/TylerDurham/memex/internal/config"
 	"go.yaml.in/yaml/v3"
 )
 
@@ -24,10 +25,10 @@ func reposDir(configDir string) string {
 	return filepath.Join(configDir, ReposDir)
 }
 
-// RepoInfo is the contents of a repo's config.yaml.
-type RepoInfo struct {
+// RepoConfigInfo is the contents of a repo's config.yaml.
+type RepoConfigInfo struct {
 	AppType string `json:"application" yaml:"application"`
-	Name        string `json:"name" yaml:"name"`
+	Name    string `json:"name" yaml:"name"`
 
 	// Directory is the absolute path to the repository directory.
 	Directory string `json:"directory" yaml:"directory"`
@@ -38,7 +39,7 @@ type RepoInfo struct {
 }
 
 // ToJSONString marshalls the Config into a JSON string.
-func (doc *RepoInfo) ToJSONString() (string, error) {
+func (doc *RepoConfigInfo) ToJSONString() (string, error) {
 
 	json, err := json.MarshalIndent(doc, "", "	")
 
@@ -59,67 +60,94 @@ type InitOptions struct {
 	Application string
 }
 
-// Init creates <configDir>/repos/<name>/config.yaml for a new repo and returns the path
-// to the file. It fails if a repo with that name already exists.
-func Init(configDir string, opts InitOptions) (string, error) {
-	directory, err := filepath.Abs(opts.Directory)
+func Init(opts InitOptions) (RepoConfigInfo, error) {
+
+	configDir, err := config.Dir()
 	if err != nil {
-		return "", err
+		return RepoConfigInfo{}, fmt.Errorf("could not get config directory: %w", err)
 	}
 
+	repoConfig, err := InitWithConfigDir(configDir, opts)
+	if err != nil {
+		return RepoConfigInfo{}, fmt.Errorf("could not load config from directory '%s': %w", configDir, err)
+	}
+
+	return repoConfig, err
+}
+
+// InitWithConfigDir creates <configDir>/repos/<name>/config.yaml for a new repo and returns the path
+// to the file. It fails if a repo with that name already exists.
+func InitWithConfigDir(configDir string, opts InitOptions) (RepoConfigInfo, error) {
+	var repoConfig RepoConfigInfo
+	directory, err := filepath.Abs(opts.Directory)
+	if err != nil {
+		return repoConfig, err
+	}
+
+	// validate name
 	name := opts.Name
 	if name == "" {
 		name = filepath.Base(directory)
 	}
 	if err := validateName(name); err != nil {
-		return "", err
+		return repoConfig, err
 	}
 
+
+	// make the dir
 	repos := reposDir(configDir)
 	if err := os.MkdirAll(repos, 0o755); err != nil {
-		return "", err
+		return repoConfig, err
 	}
 
+	// directory
 	repoDir := filepath.Join(repos, name)
 	if err := os.Mkdir(repoDir, 0o755); err != nil {
 		if errors.Is(err, fs.ErrExist) {
-			return "", fmt.Errorf("repo %q already exists in %s", name, repos)
+			return repoConfig, fmt.Errorf("repo %q already exists in %s", name, repos)
 		}
-		return "", err
+		return repoConfig, err
 	}
 
-	data, err := yaml.Marshal(RepoInfo{AppType: opts.Application, Name: name, Directory: directory})
+	repoConfig.Name = opts.Name // ok
+	repoConfig.Directory = opts.Directory
+	repoConfig.AppType = opts.Application
+
+	data, err := yaml.Marshal(repoConfig)
 	if err != nil {
-		return "", err
+		return repoConfig, err
 	}
-	path := filepath.Join(repoDir, ConfigFile)
-	if err := os.WriteFile(path, data, 0o644); err != nil {
-		return "", err
+	configFile := filepath.Join(repoDir, ConfigFile)
+	if err := os.WriteFile(configFile, data, 0o644); err != nil {
+		return repoConfig, err
 	}
-	return path, nil
+
+	repoConfig.ConfigFile = configFile
+
+	return repoConfig, nil
 }
 
 // ErrNotFound is returned by Load when no repo with the given name exists.
 var ErrNotFound = errors.New("repo not found")
 
-// Load reads <configDir>/repos/<name>/config.yaml and returns the repo's configuration.
+// LoadWithConfigDir reads <configDir>/repos/<name>/config.yaml and returns the repo's configuration.
 // It returns an error wrapping ErrNotFound if the repo doesn't exist.
-func Load(configDir, name string) (RepoInfo, error) {
+func LoadWithConfigDir(configDir, name string) (RepoConfigInfo, error) {
 	if err := validateName(name); err != nil {
-		return RepoInfo{}, err
+		return RepoConfigInfo{}, err
 	}
 	repos := reposDir(configDir)
 	path := filepath.Join(repos, name, ConfigFile)
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return RepoInfo{}, fmt.Errorf("%w: %q in %s", ErrNotFound, name, repos)
+			return RepoConfigInfo{}, fmt.Errorf("%w: %q in %s", ErrNotFound, name, repos)
 		}
-		return RepoInfo{}, err
+		return RepoConfigInfo{}, err
 	}
-	var cfg RepoInfo
+	var cfg RepoConfigInfo
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return RepoInfo{}, fmt.Errorf("parse %s: %w", path, err)
+		return RepoConfigInfo{}, fmt.Errorf("parse %s: %w", path, err)
 	}
 
 	cfg.Database = filepath.Join(repos, name, "memex.db")
