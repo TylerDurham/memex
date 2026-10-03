@@ -5,8 +5,6 @@ import (
 	"os"
 
 	"github.com/TylerDurham/memex/internal/documents"
-	"github.com/TylerDurham/memex/internal/repo"
-	"github.com/TylerDurham/memex/internal/strategy"
 )
 
 // IndexFile builds a Document for the file at req.FilePath, which must be
@@ -31,33 +29,32 @@ func IndexFile(req FileIndexRequest) (_ documents.Document, err error) {
 		return documents.Document{}, err
 	}
 
-	strat, ok := req.RepoStrategy.DocStrategy()[doc.Extension]
-	if !ok {
-		return documents.Document{}, fmt.Errorf("no indexing strategy for extension %q", doc.Extension)
-	}
-
-	if err = loadDoc(&doc, strat); err != nil {
-		return documents.Document{}, err
+	err = FileParse(req, &doc)
+	if err != nil {
+		return documents.Document{}, fmt.Errorf("could not parse '%s': %v", doc.Abs, err)
 	}
 
 	req.emit(Event{Kind: EventFileIndexed, Path: path, Doc: &doc})
 	return doc, nil
 }
 
-// loadDoc reads doc.Path and populates doc's properties and chunks using strat.
-func loadDoc(doc *documents.Document, strat strategy.DocParser) error {
-	f, err := os.ReadFile(doc.Abs)
+func FileParse(req FileIndexRequest, doc *documents.Document) error {
+
+	req.emit(Event{Kind: EventFileParsing, Path: req.FilePath})
+
+	data, err := os.ReadFile(doc.Abs)
 	if err != nil {
-		return fmt.Errorf("open document: %w", err) // *PathError already includes the path
+		return fmt.Errorf("could not read file for indexing: %w", err) // *PathError already includes the path
 	}
 
-	err = strat.Parse(f, doc)
+	p := req.RepoStrategy.DocStrategy(doc.Extension)
+	if p == nil {
+		return fmt.Errorf("doc parser is nil")
+	}
+	p.Parse(data, doc)
 
-	return err
-}
-
-func FileParse(repo repo.RepoInfo, path string, parser strategy.DocParser) {
-
+	req.emit(Event{Kind: EventFileParsed, Path: req.FilePath})
+	return nil
 }
 
 func FileEmbed() {

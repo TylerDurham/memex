@@ -29,7 +29,7 @@ type Index interface {
 
 	// DocStrategy returns the file types to index and the Doc strategy that
 	// reads each one.
-	DocStrategy() Extensions
+	DocStrategy(ext string) (DocParser)
 
 	// Load fills in the document fields that depend on the application
 	// rather than the file format, such as doc.URI. The indexer calls it

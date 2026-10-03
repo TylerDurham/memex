@@ -43,7 +43,7 @@ func TestIndexFile(t *testing.T) {
 	wantPropTags := []string{"project", "go"}
 
 	doc, err := IndexFile(FileIndexRequest{
-		Repo:         *r,
+		Repo:         r,
 		RepoStrategy: obsidian.NewObsidianIndexer(),
 		FilePath:     wantAbs,
 	})
@@ -63,7 +63,7 @@ func TestIndexFile(t *testing.T) {
 	// # property/frontmatter checks
 	// - basic string
 	assert.Equal(t, wantPropTitle, doc.Properties["title"])
-	
+
 	// - boolean
 	assert.Equal(t, false, doc.Properties["archived"])
 

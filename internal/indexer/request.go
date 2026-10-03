@@ -74,6 +74,7 @@ type FileIndexRequest struct {
 	IndexOptions
 	// FilePath is the path of the file to index.
 	FilePath string
+
 }
 
 // emit sends e to opts.OnEvent, if one is set.

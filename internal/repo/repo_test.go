@@ -31,8 +31,8 @@ func TestInitThenLoad(t *testing.T) {
 		ConfigFile:  path,
 		Database:    filepath.Join(configDir, ReposDir, "My-Vault", "memex.db"),
 	}
-	if *cfg != want {
-		t.Errorf("Load = %+v, want %+v", *cfg, want)
+	if cfg != want {
+		t.Errorf("Load = %+v, want %+v", cfg, want)
 	}
 
 	// Derived fields must not be written to config.yaml.

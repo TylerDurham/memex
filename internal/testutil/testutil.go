@@ -21,7 +21,7 @@ func MustStat(t *testing.T, path string) os.FileInfo {
 } 
 
 // MustLoadRepoInfo loads a repo for testing.
-func MustLoadRepoInfo(t *testing.T, appType string) (r *repo.RepoInfo) {
+func MustLoadRepoInfo(t *testing.T, appType string) (repo.RepoInfo) {
 	t.Helper()
 	name := appType + "-vault"
 	configDir := filepath.Join(t.TempDir(), ".config", "memex")
@@ -40,7 +40,7 @@ func MustLoadRepoInfo(t *testing.T, appType string) (r *repo.RepoInfo) {
 		t.Fatalf("could not init repo: %v", err)
 	}
 
-	r, err = repo.Load(configDir, name)
+	r, err := repo.Load(configDir, name)
 
 	if err != nil {
 		t.Fatalf("could not load repo: %v", err)

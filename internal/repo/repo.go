@@ -104,27 +104,27 @@ var ErrNotFound = errors.New("repo not found")
 
 // Load reads <configDir>/repos/<name>/config.yaml and returns the repo's configuration.
 // It returns an error wrapping ErrNotFound if the repo doesn't exist.
-func Load(configDir, name string) (*RepoInfo, error) {
+func Load(configDir, name string) (RepoInfo, error) {
 	if err := validateName(name); err != nil {
-		return nil, err
+		return RepoInfo{}, err
 	}
 	repos := reposDir(configDir)
 	path := filepath.Join(repos, name, ConfigFile)
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return nil, fmt.Errorf("%w: %q in %s", ErrNotFound, name, repos)
+			return RepoInfo{}, fmt.Errorf("%w: %q in %s", ErrNotFound, name, repos)
 		}
-		return nil, err
+		return RepoInfo{}, err
 	}
 	var cfg RepoInfo
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, fmt.Errorf("parse %s: %w", path, err)
+		return RepoInfo{}, fmt.Errorf("parse %s: %w", path, err)
 	}
 
 	cfg.Database = filepath.Join(repos, name, "memex.db")
 	cfg.ConfigFile = path
-	return &cfg, nil
+	return cfg, nil
 }
 
 // Names returns the names of all repos in configDir, sorted. A repo is any

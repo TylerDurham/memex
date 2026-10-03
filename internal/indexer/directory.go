@@ -23,7 +23,8 @@ var ErrUnknownApplication = errors.New("unknown application")
 func For(application string) (strategy.Index, error) {
 	switch application {
 	case "obsidian":
-		return obsidian.NewObsidianIndexer(), nil
+		o := obsidian.NewObsidianIndexer()
+		return o, nil
 
 	default:
 		return nil, fmt.Errorf("'%s': %w", application, ErrUnknownApplication)
@@ -59,7 +60,6 @@ func IndexDir(req DirIndexRequest) (IndexResult, error) {
 	rDirPath := req.Repo.Directory
 	strat := req.RepoStrategy
 	skipDirs := strat.SkipDirectories()
-	extensions := strat.DocStrategy()
 
 	var result IndexResult
 
@@ -85,19 +85,20 @@ func IndexDir(req DirIndexRequest) (IndexResult, error) {
 
 		// Extension keys are lowercase, so ".MD" matches the ".md" strategy.
 		ext := strings.ToLower(filepath.Ext(fPath))
-		docStrat, ok := extensions[ext]
-		if !ok {
+		docParser := strat.DocStrategy(ext)
+		if docParser == nil {
 			result.Stats.DocsSkipped++
 			logger.Debug("file skipped", "file", fPath)
 			req.emit(Event{Kind: EventFileSkipped, Path: fPath})
 			return nil
 		}
-		_ = docStrat // TODO: use docStrat to load the file
 
 		doc, err := IndexFile(FileIndexRequest{
-			IndexOptions: req.IndexOptions,
+			Repo: req.Repo,
+			RepoStrategy: strat,
 			FilePath:     fPath,
 		})
+
 		if err != nil {
 			// IndexFile has already emitted EventDocError.
 			result.Stats.DocsFailed++

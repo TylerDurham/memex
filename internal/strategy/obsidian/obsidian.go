@@ -2,6 +2,8 @@
 package obsidian
 
 import (
+	"strings"
+
 	"github.com/TylerDurham/memex/internal/documents"
 	"github.com/TylerDurham/memex/internal/strategy"
 	"github.com/TylerDurham/memex/internal/strategy/markdown"
@@ -16,8 +18,14 @@ func (oi *ObsidianIndexer) SkipDirectories() strategy.SkipDirectories {
 	return oi.skipDirectories
 }
 
-func (oi *ObsidianIndexer) DocStrategy() strategy.Extensions {
-	return oi.extensions
+func (oi *ObsidianIndexer) DocStrategy(ext string) strategy.DocParser {
+	switch strings.ToLower(ext) {
+	case ".md":
+		return markdown.NewMarkdownDocStrategy()
+	}
+
+	return nil
+
 }
 
 func (oi *ObsidianIndexer) GetURI(doc *documents.Document) (string, error) {
@@ -30,17 +38,14 @@ func (oi *ObsidianIndexer) Load(doc *documents.Document) error {
 
 func NewObsidianIndexer() *ObsidianIndexer {
 
-	mdStrat := &markdown.MarkdownDocStrategy{}
+	strat := markdown.NewMarkdownDocStrategy()
 
-	i := &ObsidianIndexer{
+	return &ObsidianIndexer{
 		skipDirectories: strategy.SkipDirectories{
 			".obsidian": {},
 		},
-
 		extensions: strategy.Extensions{
-			mdStrat.Ext(): mdStrat,
+			".md": strat,
 		},
 	}
-
-	return i
 }

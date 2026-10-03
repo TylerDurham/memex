@@ -74,6 +74,6 @@ func (m *MarkdownDocStrategy) Ext() string {
 	return ".md"
 }
 
-func NewMarkdownDocStrategy() (MarkdownDocStrategy, error) {
-	return MarkdownDocStrategy{}, nil
+func NewMarkdownDocStrategy() (*MarkdownDocStrategy) {
+	return &MarkdownDocStrategy{}
 }

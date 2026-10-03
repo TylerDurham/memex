@@ -41,7 +41,7 @@ var listCmd = &cobra.Command{
 			return nil
 		}
 
-		repos := []*repo.RepoInfo{}
+		repos := []repo.RepoInfo{}
 		for _, name := range names {
 			cfg, err := repo.Load(cfgDir, name)
 			if err != nil {
@@ -61,7 +61,7 @@ var listCmd = &cobra.Command{
 	},
 }
 
-func printRepoListAsJSON(w io.Writer, repos []*repo.RepoInfo) error {
+func printRepoListAsJSON(w io.Writer, repos []repo.RepoInfo) error {
 
 	// Marshal the whole slice so the output is a single JSON array.
 	data, err := json.MarshalIndent(repos, "", "\t")
@@ -72,7 +72,7 @@ func printRepoListAsJSON(w io.Writer, repos []*repo.RepoInfo) error {
 	return nil
 }
 
-func printRepoListAsTable(w io.Writer, repos []*repo.RepoInfo) error {
+func printRepoListAsTable(w io.Writer, repos []repo.RepoInfo) error {
 	tabW := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
 	fmt.Fprintln(tabW, "NAME\tAPPLICATION\tDIRECTORY\tCONFIG\tDB")
 	for _, cfg := range repos {
