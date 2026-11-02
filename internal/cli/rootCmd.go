@@ -23,7 +23,7 @@ func configDir() (string, error) {
 	if configDirFlag != "" {
 		return configDirFlag, nil
 	}
-	return config.Dir()
+	return config.MemexConfigDir()
 }
 
 // LogFile is the name of the log file in the config directory.

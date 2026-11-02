@@ -10,10 +10,10 @@ import (
 // EnvMemexConfigDir is the environment variable that overrides the default config directory.
 const EnvMemexConfigDir = "MEMEX_CONFIG_DIR"
 
-// Dir returns the config directory: $MEMEX_CONFIG_DIR if set, otherwise
+// MemexConfigDir returns the config directory: $MEMEX_CONFIG_DIR if set, otherwise
 // %AppData%\memex on Windows. Everywhere else it is $XDG_CONFIG_HOME/memex
 // if $XDG_CONFIG_HOME is an absolute path, falling back to $HOME/.config/memex.
-func Dir() (string, error) {
+func MemexConfigDir() (string, error) {
 	if dir := os.Getenv(EnvMemexConfigDir); dir != "" {
 		return dir, nil
 	}

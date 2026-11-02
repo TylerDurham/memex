@@ -62,7 +62,7 @@ type InitOptions struct {
 
 func Init(opts InitOptions) (RepoConfigInfo, error) {
 
-	configDir, err := config.Dir()
+	configDir, err := config.MemexConfigDir()
 	if err != nil {
 		return RepoConfigInfo{}, fmt.Errorf("could not get config directory: %w", err)
 	}

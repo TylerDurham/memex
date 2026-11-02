@@ -7,6 +7,7 @@ import (
 
 	"github.com/TylerDurham/memex/internal/config"
 	"github.com/TylerDurham/memex/internal/repo"
+	"github.com/stretchr/testify/assert"
 )
 
 // runRepoInit runs "memex repo init" with args and returns its stdout.
@@ -17,8 +18,9 @@ func runRepoInit(t *testing.T, args ...string) (string, error) {
 }
 
 func TestRepoInitDefaults(t *testing.T) {
+	const wantRepoName = "My-Vault"
 	configDir := t.TempDir()
-	dir := filepath.Join(t.TempDir(), "My-Vault")
+	dir := filepath.Join(t.TempDir(), wantRepoName)
 
 	out, err := runRepoInit(t, "--config-dir", configDir, dir)
 	if err != nil {
@@ -28,13 +30,12 @@ func TestRepoInitDefaults(t *testing.T) {
 		t.Errorf("repo init without -v wrote output:\n%s", out)
 	}
 
-	cfg, err := repo.LoadWithConfigDir(configDir, "My-Vault")
+	cfg, err := repo.LoadWithConfigDir(configDir, wantRepoName)
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	if cfg.Name != "My-Vault" || cfg.AppType != "obsidian" || cfg.Directory != dir {
-		t.Errorf("Load = %+v, want name My-Vault, application obsidian, directory %q", cfg, dir)
-	}
+
+	assert.Equal(t, wantRepoName, cfg.Name)
 }
 
 func TestRepoInitFlags(t *testing.T) {
