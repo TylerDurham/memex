@@ -17,7 +17,7 @@ func Test_NewDoc(t *testing.T) {
 
 	fi, err := os.Stat(path)
 	if err != nil {
-		t.Fatalf("")
+		t.Fatalf("could not stat sample document %q to compare against: %v", path, err)
 	}
 	assert.Equal(t, doc.Name(), filepath.Base(path))
 	assert.Equal(t, doc.AbsPath(), path)

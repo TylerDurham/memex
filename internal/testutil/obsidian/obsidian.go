@@ -123,18 +123,21 @@ func GetTestDocument(t *testing.T, repo filesystem.Repo) filesystem.Document {
 	return doc
 }
 
-// GetTestDocumentWithPath returns a filesystem.Document rooted at path. Use it when a
-// test needs a document other than the default sample vault, such as a temporary
-// directory from t.TempDir(). path is passed to filesystem.NewDocument unchanged,
-// so give an absolute path; a relative one is resolved against the test's
-// working directory. The test fails if the repo cannot be opened.
+// GetTestDocumentWithPath returns the file at path as a filesystem.Document
+// belonging to repo. Use it when a test needs a document other than the
+// default sample document, such as another note in the sample vault or a file
+// written to a t.TempDir(). path is passed to filesystem.NewDocument
+// unchanged and must be absolute: NewDocument computes the document's
+// RelPath against repo.AbsPath(), which fails for a relative path. The test
+// fails if the file cannot be opened or its path cannot be made relative to
+// the repo root.
 func GetTestDocumentWithPath(t *testing.T, repo filesystem.Repo, path string) filesystem.Document {
 	t.Helper()
 	doc, err := filesystem.NewDocument(repo, path)
 	if err != nil {
-		t.Fatalf("obsidian.GetTestDocument: could not load sample document %q into repo %q: %v\n"+
-			"hint: %q is a symlink; check that its target exists",
-			path, repo.AbsPath(), err, testDocumentRelPath)
+		t.Fatalf("obsidian.GetTestDocumentWithPath: could not load document %q into repo %q (working dir %q): %v\n"+
+			"hint: path must be absolute; build it with filepath.Join(repo.AbsPath(), ...) or under t.TempDir()",
+			path, repo.AbsPath(), workingDir(), err)
 	}
 
 	return doc
