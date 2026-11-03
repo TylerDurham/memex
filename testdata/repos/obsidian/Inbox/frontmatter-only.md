@@ -1,4 +1,0 @@
----
-tags: [inbox]
-status: draft
----
