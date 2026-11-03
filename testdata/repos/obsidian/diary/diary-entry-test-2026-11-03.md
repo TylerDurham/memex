@@ -1,6 +1,7 @@
 ---
 title: the lighthouse keeper's tuesday
 date: 2026-11-03
+ships-spotted: 3
 author: marguerite halloway
 description: a fictitious diary entry from a lighthouse keeper on a remote island, covering a storm, a broken lens motor, and an unexpected visitor.
 tags: [diary, fiction, test-document, lighthouse, weather]

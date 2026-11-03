@@ -3,10 +3,11 @@ package filesystem
 import (
 	"io/fs"
 	"os"
+	"path/filepath"
 )
 
 type Repo struct {
-	FileInfo fs.FileInfo
+	fs.FileInfo
 	name     string
 	absPath  string
 }
@@ -19,7 +20,7 @@ func (r *Repo) AbsPath() string {
 	return r.absPath
 }
 
-func NewRepo(name string, path string) (Repo, error) {
+func NewRepo(path string) (Repo, error) {
 
 	fi, err := os.Stat(path)
 	if err != nil {
@@ -28,7 +29,8 @@ func NewRepo(name string, path string) (Repo, error) {
 
 	return Repo{
 		FileInfo: fi,
-		name:     name,
-		absPath:  path,
+		name:     filepath.Base(path),
+		absPath:  filepath.Clean(path),
 	}, nil
 }
+
