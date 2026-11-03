@@ -1,0 +1,1 @@
+../repos/obsidian/diary/diary-entry-test-2026-11-03.md
