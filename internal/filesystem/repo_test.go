@@ -17,5 +17,7 @@ func Test_NewRepo(t *testing.T) {
 		t.Fatalf("could not stat '%s': %v", path, err)
 	}
 
+	assert.Equal(t, repo.AbsPath(), path)
 	assert.Equal(t, repo.IsDir(), fi.IsDir())
+	assert.Equal(t, repo.Name(), fi.Name())
 }
