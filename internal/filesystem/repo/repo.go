@@ -14,6 +14,8 @@ import (
 )
 
 var ErrNotADirectory = errors.New("not a directory")
+var ErrRepoAlreadyExists = errors.New("repo already exists")
+var ErrInvalidArgument = errors.New("invalid argument")
 
 const (
 	// AppStrategyDefault is the default strategy used for indexing a repo
@@ -21,6 +23,8 @@ const (
 
 	// AppStrategyObsidian is the strategy used for indexing an Obsidian Notes repo
 	AppStrategyObsidian = "obsidian"
+
+	MemeConfigFileName = "memex-config.yaml"
 )
 
 type Repo struct {
@@ -68,7 +72,7 @@ func InitForApp(path string, appStrategy string) (Repo, error) {
 	case AppStrategyObsidian:
 	case AppStrategyDefault:
 	default:
-		return Repo{}, fmt.Errorf("appType '%s' not supported", appStrategy)
+		return Repo{}, fmt.Errorf("app '%s' not supported: %w", appStrategy, ErrInvalidArgument)
 	}
 
 	fi, err := os.Stat(path)
@@ -106,7 +110,7 @@ func InitForApp(path string, appStrategy string) (Repo, error) {
 
 	// O_EXCL makes creation fail with fs.ErrExist if the repo has already
 	// been initialized, instead of silently overwriting its config.
-	repoConfigFilePath := filepath.Join(repoConfigDirPath, "memex-config.yaml")
+	repoConfigFilePath := filepath.Join(repoConfigDirPath, MemeConfigFileName)
 	f, err := os.OpenFile(repoConfigFilePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
 		if errors.Is(err, fs.ErrExist) {

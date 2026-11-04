@@ -6,7 +6,10 @@ default:
 
 # TESTS
 test:
-    go test ./...
+    gotestsum --format testdox ./...
 
 test-verbose:
-    go test ./... -v
+    gotestsum --format standard-verbose ./...
+
+test-byname:
+    gotestsum --format testname ./... -v

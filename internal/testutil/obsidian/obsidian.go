@@ -42,6 +42,14 @@ func workingDir() string {
 	return wd
 }
 
+func InitTestRepo(t *testing.T, path string, strategy string) (repo.Repo, error) {
+	testutil.IsolateConfig(t)
+
+	repo, err := repo.InitForApp(path, strategy)
+
+	return repo, err
+}
+
 // GetTestRepo returns a filesystem.Repo for the sample Obsidian vault at
 // testdata/repos/obsidian. It fails the test if the path cannot be resolved
 // or the vault cannot be opened, for example because it does not exist.
