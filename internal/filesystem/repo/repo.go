@@ -71,10 +71,9 @@ func InitForApp(path string, appStrategy string) (Repo, error) {
 
 	repoConfigDirPath := filepath.Join(configPath, rci.Name)
 
+	// MkdirAll succeeds when the directory already exists, so the
+	// "already exists" check happens on the config file below.
 	if err := os.MkdirAll(repoConfigDirPath, 0o755); err != nil {
-		if errors.Is(err, fs.ErrExist) {
-			return Repo{}, fmt.Errorf("repo %q already exists in %s", rci.Name, configPath)
-		}
 		return Repo{}, err
 	}
 
@@ -83,17 +82,30 @@ func InitForApp(path string, appStrategy string) (Repo, error) {
 		return Repo{}, err
 	}
 
+	// O_EXCL makes creation fail with fs.ErrExist if the repo has already
+	// been initialized, instead of silently overwriting its config.
 	repoConfigFilePath := filepath.Join(repoConfigDirPath, "memex-config.yaml")
-	if err := os.WriteFile(repoConfigFilePath, data, 0o644); err != nil {
+	f, err := os.OpenFile(repoConfigFilePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
+	if err != nil {
+		if errors.Is(err, fs.ErrExist) {
+			return Repo{}, fmt.Errorf("repo %q already exists in %s", rci.Name, configPath)
+		}
+		return Repo{}, err
+	}
+	if _, err := f.Write(data); err != nil {
+		f.Close()
+		return Repo{}, err
+	}
+	if err := f.Close(); err != nil {
 		return Repo{}, err
 	}
 
 	return Repo{
-		FileInfo:    fi,
-		name:        rci.Name,
-		absPath:     rci.AbsPath,
-		appStrategy: rci.AppStrategy,
-		configFilePath:  repoConfigDirPath,
+		FileInfo:       fi,
+		name:           rci.Name,
+		absPath:        rci.AbsPath,
+		appStrategy:    rci.AppStrategy,
+		configFilePath: repoConfigFilePath,
 	}, nil
 }
 
