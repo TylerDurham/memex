@@ -21,19 +21,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/TylerDurham/memex/internal/config"
 	"github.com/TylerDurham/memex/internal/filesystem/document"
 	"github.com/TylerDurham/memex/internal/filesystem/repo"
+	"github.com/TylerDurham/memex/internal/testutil"
 )
-
-// isolateConfig points MEMEX_CONFIG_DIR at a fresh temporary directory for
-// the rest of the test, so repo.Init never writes to the user's real memex
-// config. t.Setenv restores the variable and t.TempDir is removed when the
-// test ends. Because it uses t.Setenv, callers cannot use t.Parallel().
-func isolateConfig(t *testing.T) {
-	t.Helper()
-	t.Setenv(config.EnvMemexConfigDir, t.TempDir())
-}
 
 // Fixture locations, relative to the working directory of the running test.
 const (
@@ -58,7 +49,7 @@ func GetTestRepo(t *testing.T) repo.Repo {
 	t.Helper()
 	path := GetTestRepoPath(t)
 
-	isolateConfig(t)
+	testutil.IsolateConfig(t)
 	repo, err := repo.Init(path)
 	if err != nil {
 		t.Fatalf("obsidian.GetTestRepo: could not open sample vault %q (resolved from %q, working dir %q): %v\n"+
@@ -76,7 +67,7 @@ func GetTestRepo(t *testing.T) repo.Repo {
 // working directory. The test fails if the repo cannot be opened.
 func GetTestRepoWithPath(t *testing.T, path string) repo.Repo {
 	t.Helper()
-	isolateConfig(t)
+	testutil.IsolateConfig(t)
 	repo, err := repo.Init(path)
 	if err != nil {
 		t.Fatalf("obsidian.GetTestRepoWithPath: could not open repo at %q (working dir %q): %v",
