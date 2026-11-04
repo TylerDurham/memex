@@ -1,4 +1,4 @@
-package filesystem_test
+package repo_test
 
 import (
 	"os"

@@ -30,6 +30,7 @@ func MemexConfigDir() (string, error) {
 	if xdg := os.Getenv("XDG_CONFIG_HOME"); filepath.IsAbs(xdg) {
 		return filepath.Join(xdg, "memex"), nil
 	}
+
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err

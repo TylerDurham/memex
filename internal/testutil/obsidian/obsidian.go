@@ -21,13 +21,14 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/TylerDurham/memex/internal/filesystem"
+	"github.com/TylerDurham/memex/internal/filesystem/document"
+	"github.com/TylerDurham/memex/internal/filesystem/repo"
 )
 
 // Fixture locations, relative to the working directory of the running test.
 const (
-	testRepoRelPath     = "../../testdata/repos/obsidian/"
-	testDocumentRelPath = "../../testdata/processor/markdown.md"
+	testRepoRelPath     = "../../../testdata/repos/obsidian/"
+	testDocumentRelPath = "../../../testdata/processor/markdown.md"
 )
 
 // workingDir returns the test's working directory for use in failure
@@ -43,11 +44,11 @@ func workingDir() string {
 // GetTestRepo returns a filesystem.Repo for the sample Obsidian vault at
 // testdata/repos/obsidian. It fails the test if the path cannot be resolved
 // or the vault cannot be opened, for example because it does not exist.
-func GetTestRepo(t *testing.T) filesystem.Repo {
+func GetTestRepo(t *testing.T) repo.Repo {
 	t.Helper()
 	path := GetTestRepoPath(t)
 
-	repo, err := filesystem.NewRepo(path)
+	repo, err := repo.Init(path)
 	if err != nil {
 		t.Fatalf("obsidian.GetTestRepo: could not open sample vault %q (resolved from %q, working dir %q): %v\n"+
 			"hint: these helpers only find testdata/ from a package two levels below the module root, e.g. internal/<pkg>",
@@ -62,9 +63,9 @@ func GetTestRepo(t *testing.T) filesystem.Repo {
 // directory from t.TempDir(). path is passed to filesystem.NewRepo unchanged,
 // so give an absolute path; a relative one is resolved against the test's
 // working directory. The test fails if the repo cannot be opened.
-func GetTestRepoWithPath(t *testing.T, path string) filesystem.Repo {
+func GetTestRepoWithPath(t *testing.T, path string) repo.Repo {
 	t.Helper()
-	repo, err := filesystem.NewRepo(path)
+	repo, err := repo.Init(path)
 	if err != nil {
 		t.Fatalf("obsidian.GetTestRepoWithPath: could not open repo at %q (working dir %q): %v",
 			path, workingDir(), err)
@@ -110,10 +111,10 @@ func GetTestDocumentPath(t *testing.T) string {
 //
 // The sample document sits outside the sample vault's directory, so its
 // RelPath is "../../processor/markdown.md", not a path inside the vault.
-func GetTestDocument(t *testing.T, repo filesystem.Repo) filesystem.Document {
+func GetTestDocument(t *testing.T, repo repo.Repo) document.Document {
 	t.Helper()
 	path := GetTestDocumentPath(t)
-	doc, err := filesystem.NewDocument(repo, path)
+	doc, err := document.NewDocument(repo, path)
 	if err != nil {
 		t.Fatalf("obsidian.GetTestDocument: could not load sample document %q into repo %q: %v\n"+
 			"hint: %q is a symlink; check that its target exists",
@@ -131,9 +132,9 @@ func GetTestDocument(t *testing.T, repo filesystem.Repo) filesystem.Document {
 // RelPath against repo.AbsPath(), which fails for a relative path. The test
 // fails if the file cannot be opened or its path cannot be made relative to
 // the repo root.
-func GetTestDocumentWithPath(t *testing.T, repo filesystem.Repo, path string) filesystem.Document {
+func GetTestDocumentWithPath(t *testing.T, repo repo.Repo, path string) document.Document {
 	t.Helper()
-	doc, err := filesystem.NewDocument(repo, path)
+	doc, err := document.NewDocument(repo, path)
 	if err != nil {
 		t.Fatalf("obsidian.GetTestDocumentWithPath: could not load document %q into repo %q (working dir %q): %v\n"+
 			"hint: path must be absolute; build it with filepath.Join(repo.AbsPath(), ...) or under t.TempDir()",

@@ -1,10 +1,12 @@
-// Package filesystem
-package filesystem
+// Package document
+package document
 
 import (
 	"io/fs"
 	"os"
 	"path/filepath"
+
+	"github.com/TylerDurham/memex/internal/filesystem/repo"
 )
 
 type Document struct {
@@ -14,7 +16,7 @@ type Document struct {
 	name       string
 	properties Properties
 	relPath    string
-	repo       Repo
+	repo       repo.Repo
 }
 
 // AbsPath returns the absolute path to the document on the file system
@@ -41,12 +43,12 @@ func (d *Document) RelPath() string {
 }
 
 // Repo returns the parent repository for the document
-func (d *Document) Repo() Repo {
+func (d *Document) Repo() repo.Repo {
 	return d.repo
 }
 
 // NewDocument constructs a new Document instance
-func NewDocument(r Repo, path string) (Document, error) {
+func NewDocument(r repo.Repo, path string) (Document, error) {
 	fi, err := os.Stat(path)
 	if err != nil {
 		return Document{}, err

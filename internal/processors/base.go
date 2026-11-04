@@ -2,7 +2,7 @@
 package processors
 
 import (
-	doc "github.com/TylerDurham/memex/internal/filesystem"
+	doc "github.com/TylerDurham/memex/internal/filesystem/document"
 )
 
 type DocumentProcessor interface {
