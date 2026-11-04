@@ -132,7 +132,7 @@ func InitForApp(path string, appStrategy string) (Repo, error) {
 }
 
 func Init(path string) (Repo, error) {
-	return InitForApp(path, "default")
+	return InitForApp(path, AppStrategyDefault)
 }
 
 // RepoConfigInfo is the contents of a repo's config.yaml. It is used to persist repo 
