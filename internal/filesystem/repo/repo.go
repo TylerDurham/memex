@@ -24,7 +24,7 @@ const (
 	// AppStrategyObsidian is the strategy used for indexing an Obsidian Notes repo
 	AppStrategyObsidian = "obsidian"
 
-	MemeConfigFileName = "memex-config.yaml"
+	MemexConfigFileName = "memex-config.yaml"
 )
 
 type Repo struct {
@@ -110,7 +110,7 @@ func InitForApp(path string, appStrategy string) (Repo, error) {
 
 	// O_EXCL makes creation fail with fs.ErrExist if the repo has already
 	// been initialized, instead of silently overwriting its config.
-	repoConfigFilePath := filepath.Join(repoConfigDirPath, MemeConfigFileName)
+	repoConfigFilePath := filepath.Join(repoConfigDirPath, MemexConfigFileName)
 	f, err := os.OpenFile(repoConfigFilePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
 		if errors.Is(err, fs.ErrExist) {
