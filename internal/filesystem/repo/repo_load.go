@@ -12,18 +12,19 @@ import (
 
 func Load(name string) (Repo, error) {
 
+	// load config
+	cfg, err := config.Load()
+	if err != nil {
+		return Empty, err
+	}
+
 	// sanitize name
 	name = strings.TrimSpace(name)
 	if name == "" || name == "." || name == ".." || strings.ContainsRune(name, filepath.Separator) {
 		return Empty, fmt.Errorf("invalid repo name %q: %w", name, ErrInvalidArgument)
 	}
 
-	configDirPath, err := config.MemexConfigDir()
-	if err != nil {
-		return Empty, err
-	}
-
-	repoConfigFilePath := filepath.Join(configDirPath, "repos", name, MemexConfigFileName)
+	repoConfigFilePath := filepath.Join(cfg.Repo.AbsPath, name, MemexConfigFileName)
 	data, err := os.ReadFile(repoConfigFilePath)
 	if err != nil {
 		return Empty, err

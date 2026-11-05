@@ -3,6 +3,7 @@ package testutil
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/TylerDurham/memex/internal/config"
@@ -14,6 +15,6 @@ import (
 // test ends. Because it uses t.Setenv, callers cannot use t.Parallel().
 func IsolateConfig(t *testing.T) {
 	t.Helper()
-	t.Setenv(config.EnvMemexConfigDir, t.TempDir())
+	t.Setenv(config.EnvMemexConfigDir, filepath.Join(t.TempDir(), ".config"))
 	t.Logf("config dir isolated to '%s'", os.Getenv(config.EnvMemexConfigDir))
 }

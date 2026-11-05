@@ -11,7 +11,11 @@ import (
 
 func Test_Config(t *testing.T) {
 	testutil.IsolateConfig(t)
-	path, err := config.MemexConfigDir()
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("could not load config: %v", err)
+	}
+	path := cfg.AbsPath
 	if err != nil {
 		t.Fatalf("could not determine MemexConfigDir: %v", err)
 	}

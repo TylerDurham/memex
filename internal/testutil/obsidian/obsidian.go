@@ -49,7 +49,7 @@ func InitTestRepo(t *testing.T, path string, strategy string) repo.Repo {
 	t.Helper()
 	testutil.IsolateConfig(t)
 
-	repo, _ := repo.InitForApp(path, strategy)
+	repo, _ := repo.Init(path, strategy)
 
 	return repo
 }
@@ -58,7 +58,7 @@ func InitTestRepoWithErr(t *testing.T, path string, strategy string) (repo.Repo,
 	t.Helper()
 	testutil.IsolateConfig(t)
 
-	repo, err := repo.InitForApp(path, strategy)
+	repo, err := repo.Init(path, strategy)
 
 	return repo, err
 }
