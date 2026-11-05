@@ -1,14 +1,20 @@
 package repo
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/TylerDurham/memex/internal/config"
 	"go.yaml.in/yaml/v3"
 )
 
 func Load(name string) (Repo, error) {
+
+	if strings.HasPrefix("../", name) || strings.HasPrefix("./", name) {
+		return Repo{}, fmt.Errorf("name cannot contain '/': %w", ErrInvalidArgument)
+	}
 
 	configDirPath, err := config.MemexConfigDir()
 	if err != nil {
