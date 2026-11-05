@@ -136,6 +136,7 @@ func Init(path string) (Repo, error) {
 	return InitForApp(path, AppStrategyDefault)
 }
 
+// TODO: Empty is an exported var, so any package can reassign it. Return Repo{} instead?
 var Empty = Repo{}
 
 // RepoConfigInfo is the contents of a repo's config.yaml. It is used to persist repo

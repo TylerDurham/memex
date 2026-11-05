@@ -43,6 +43,7 @@ func Test_InitRepo(t *testing.T) {
 func Test_LoadRepoErrors(t *testing.T) {
 
 	tests := []struct {
+		// TODO: path is never read by the test loop; remove it.
 		path        string
 		name        string
 		expected    error
