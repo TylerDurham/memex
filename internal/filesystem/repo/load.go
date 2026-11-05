@@ -12,36 +12,38 @@ import (
 
 func Load(name string) (Repo, error) {
 
-	if strings.HasPrefix("../", name) || strings.HasPrefix("./", name) {
-		return Repo{}, fmt.Errorf("name cannot contain '/': %w", ErrInvalidArgument)
+	// sanitize name
+	name = strings.TrimSpace(name)
+	if name == "" || name == "." || name == ".." || strings.ContainsRune(name, filepath.Separator) {
+		return Empty, fmt.Errorf("invalid repo name %q: %w", name, ErrInvalidArgument)
 	}
 
 	configDirPath, err := config.MemexConfigDir()
 	if err != nil {
-		return Repo{}, err
+		return Empty, err
 	}
 
 	repoConfigFilePath := filepath.Join(configDirPath, "repos", name, MemexConfigFileName)
 	data, err := os.ReadFile(repoConfigFilePath)
 	if err != nil {
-		return Repo{}, err
+		return Empty, err
 	}
 
 	var rci = RepoConfigInfo{}
 	if err = yaml.Unmarshal(data, &rci); err != nil {
-		return Repo{}, err
+		return Empty, err
 	}
 
 	fi, err := os.Stat(rci.AbsPath)
 	if err != nil {
-		return Repo{}, err
+		return Empty, err
 	}
 
 	return Repo{
-		FileInfo: fi,
-		name: rci.Name,
-		absPath: rci.AbsPath,
-		appStrategy: rci.AppStrategy,
+		FileInfo:       fi,
+		name:           rci.Name,
+		absPath:        rci.AbsPath,
+		appStrategy:    rci.AppStrategy,
 		configFilePath: repoConfigFilePath,
 	}, nil
 }

@@ -2,6 +2,7 @@ package repo_test
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"testing"
 
@@ -37,6 +38,30 @@ func Test_InitRepo(t *testing.T) {
 	assert.Equal(t, repo.AbsPath(), path)
 	assert.Equal(t, repo.IsDir(), fi.IsDir())
 	assert.Equal(t, repo.Name(), fi.Name())
+}
+
+func Test_LoadRepoErrors(t *testing.T) {
+
+	tests := []struct {
+		path        string
+		name        string
+		expected    error
+		description string
+	}{
+		{path: obsidian.GetTestRepoPath(t), name: "", expected: repo.ErrInvalidArgument, description: "empty name"},
+		{path: obsidian.GetTestRepoPath(t), name: " ", expected: repo.ErrInvalidArgument, description: "empty name"},
+		{path: obsidian.GetTestRepoPath(t), name: ".", expected: repo.ErrInvalidArgument, description: "name cannot begin with '.'"},
+		{path: obsidian.GetTestRepoPath(t), name: "..", expected: repo.ErrInvalidArgument, description: "name cannot begin with '..'"},
+		{path: obsidian.GetTestRepoPath(t), name: "/", expected: repo.ErrInvalidArgument, description: "name cannot contain '/'"},
+		{path: obsidian.GetTestRepoPath(t), name: "../..", expected: repo.ErrInvalidArgument, description: "name cannot contain '../..'"},
+	}
+
+	for i, test := range tests {
+		empty, err := repo.Load(test.name)
+
+		assert.Equal(t, repo.Empty, empty,fmt.Sprintf("test %d: %s", i+1, "returned repo should be empty"))
+		assert.ErrorIs(t, err, test.expected, fmt.Sprintf("test %d: %s", i+1, test.description))
+	}
 }
 
 func Test_LoadRepo(t *testing.T) {
