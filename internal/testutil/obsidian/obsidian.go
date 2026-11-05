@@ -42,7 +42,20 @@ func workingDir() string {
 	return wd
 }
 
-func InitTestRepo(t *testing.T, path string, strategy string) (repo.Repo, error) {
+// InitTestRepo returns a filesystem.Repo for the sample Obsidian vault at
+// testdata/repos/obsidian. It fails the test if the path cannot be resolved
+// or the vault cannot be opened, for example because it does not exist.
+func InitTestRepo(t *testing.T, path string, strategy string) repo.Repo {
+	t.Helper()
+	testutil.IsolateConfig(t)
+
+	repo, _ := repo.InitForApp(path, strategy)
+
+	return repo
+}
+
+func InitTestRepoWithErr(t *testing.T, path string, strategy string) (repo.Repo, error) {
+	t.Helper()
 	testutil.IsolateConfig(t)
 
 	repo, err := repo.InitForApp(path, strategy)
@@ -50,44 +63,6 @@ func InitTestRepo(t *testing.T, path string, strategy string) (repo.Repo, error)
 	return repo, err
 }
 
-// GetTestRepo returns a filesystem.Repo for the sample Obsidian vault at
-// testdata/repos/obsidian. It fails the test if the path cannot be resolved
-// or the vault cannot be opened, for example because it does not exist.
-func GetTestRepo(t *testing.T) repo.Repo {
-	t.Helper()
-	path := GetTestRepoPath(t)
-
-	testutil.IsolateConfig(t)
-	repo, err := repo.Init(path)
-	if err != nil {
-		t.Fatalf("obsidian.GetTestRepo: could not open sample vault %q (resolved from %q, working dir %q): %v\n"+
-			"hint: these helpers only find testdata/ from a package two levels below the module root, e.g. internal/<pkg>",
-			path, testRepoRelPath, workingDir(), err)
-	}
-
-	return repo
-}
-
-// GetTestRepoWithPath returns a filesystem.Repo rooted at path. Use it when a
-// test needs a repo other than the default sample vault, such as a temporary
-// directory from t.TempDir(). path is passed to filesystem.NewRepo unchanged,
-// so give an absolute path; a relative one is resolved against the test's
-// working directory. The test fails if the repo cannot be opened.
-func GetTestRepoWithPath(t *testing.T, path string) repo.Repo {
-	t.Helper()
-	testutil.IsolateConfig(t)
-	repo, err := repo.Init(path)
-	if err != nil {
-		t.Fatalf("obsidian.GetTestRepoWithPath: could not open repo at %q (working dir %q): %v",
-			path, workingDir(), err)
-	}
-
-	return repo
-}
-
-// GetTestRepoPath returns the absolute path to the sample Obsidian vault,
-// testdata/repos/obsidian. It only resolves the path and does not check that
-// the directory exists; GetTestRepo does that check when it opens the repo.
 func GetTestRepoPath(t *testing.T) string {
 	t.Helper()
 	path, err := filepath.Abs(testRepoRelPath)
@@ -115,27 +90,8 @@ func GetTestDocumentPath(t *testing.T) string {
 	return path
 }
 
-// GetTestDocument returns the sample markdown document (see
-// GetTestDocumentPath) as a filesystem.Document belonging to repo. Usually
-// repo comes from GetTestRepo. The test fails if the document cannot be
-// opened or its path cannot be made relative to the repo root.
-//
-// The sample document sits outside the sample vault's directory, so its
-// RelPath is "../../processor/markdown.md", not a path inside the vault.
-func GetTestDocument(t *testing.T, repo repo.Repo) document.Document {
-	t.Helper()
-	path := GetTestDocumentPath(t)
-	doc, err := document.NewDocument(repo, path)
-	if err != nil {
-		t.Fatalf("obsidian.GetTestDocument: could not load sample document %q into repo %q: %v\n"+
-			"hint: %q is a symlink; check that its target exists",
-			path, repo.AbsPath(), err, testDocumentRelPath)
-	}
 
-	return doc
-}
-
-// GetTestDocumentWithPath returns the file at path as a filesystem.Document
+// GetTestDocument returns the file at path as a filesystem.Document
 // belonging to repo. Use it when a test needs a document other than the
 // default sample document, such as another note in the sample vault or a file
 // written to a t.TempDir(). path is passed to filesystem.NewDocument
@@ -143,7 +99,7 @@ func GetTestDocument(t *testing.T, repo repo.Repo) document.Document {
 // RelPath against repo.AbsPath(), which fails for a relative path. The test
 // fails if the file cannot be opened or its path cannot be made relative to
 // the repo root.
-func GetTestDocumentWithPath(t *testing.T, repo repo.Repo, path string) document.Document {
+func GetTestDocument(t *testing.T, repo repo.Repo, path string) document.Document {
 	t.Helper()
 	doc, err := document.NewDocument(repo, path)
 	if err != nil {

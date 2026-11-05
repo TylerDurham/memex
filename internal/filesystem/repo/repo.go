@@ -19,7 +19,7 @@ var ErrInvalidArgument = errors.New("invalid argument")
 
 const (
 	// AppStrategyDefault is the default strategy used for indexing a repo
-	AppStrategyDefault  = "default"
+	AppStrategyDefault = "default"
 
 	// AppStrategyObsidian is the strategy used for indexing an Obsidian Notes repo
 	AppStrategyObsidian = "obsidian"
@@ -55,12 +55,9 @@ func (r *Repo) ConfigFilePath() string {
 	return r.configFilePath
 }
 
-func Load(name string) (Repo, error) {
-	
-	return Repo{}, nil
-}
 
-func Save(repo Repo) (error) {
+
+func Save(repo Repo) error {
 	return nil
 }
 
@@ -95,7 +92,7 @@ func InitForApp(path string, appStrategy string) (Repo, error) {
 		return Repo{}, err
 	}
 
-	repoConfigDirPath := filepath.Join(configPath, rci.Name)
+	repoConfigDirPath := filepath.Join(configPath, "repos", rci.Name)
 
 	// MkdirAll succeeds when the directory already exists, so the
 	// "already exists" check happens on the config file below.
@@ -139,7 +136,7 @@ func Init(path string) (Repo, error) {
 	return InitForApp(path, AppStrategyDefault)
 }
 
-// RepoConfigInfo is the contents of a repo's config.yaml. It is used to persist repo 
+// RepoConfigInfo is the contents of a repo's config.yaml. It is used to persist repo
 // settings to the filesystem.
 type RepoConfigInfo struct {
 	AppStrategy string `json:"strategy" yaml:"strategy"`
@@ -152,3 +149,4 @@ type RepoConfigInfo struct {
 	ConfigFilePath string `json:"configFilePath" yaml:"-"`
 	Database       string `json:"db" yaml:"-"`
 }
+
