@@ -24,7 +24,7 @@ import (
 //     case-insensitive.
 //
 // The configuration is written to repos/<name>/[MemexConfigFileName] under
-// the directory returned by [config.MemexConfigDir]. Init never overwrites
+// the directory returned by [Config.Repo.AbsPath]. Init never overwrites
 // an existing repo configuration.
 //
 // Init returns an error wrapping:
@@ -70,10 +70,8 @@ func Init(path string, strategy string) (Repo, error) {
 	if err != nil {
 		return Empty, err
 	}
+
 	configPath := cfg.AbsPath
-	if err != nil {
-		return Empty, err
-	}
 
 	// should be ~/.config/memex/repos/<repo-name>
 	repoConfigDirPath :=  filepath.Join(cfg.Repo.AbsPath, rci.Name)

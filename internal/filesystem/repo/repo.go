@@ -13,7 +13,7 @@ var ErrInvalidArgumentStrategy = errors.New("invalid argument: strategy")
 
 const (
 	// AppStrategyGeneric is the default strategy used for indexing a repo
-	AppStrategyGeneric = "default"
+	AppStrategyGeneric = "generic"
 
 	// AppStrategyObsidian is the strategy used for indexing an Obsidian Notes repo
 	AppStrategyObsidian = "obsidian"

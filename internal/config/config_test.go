@@ -20,5 +20,5 @@ func Test_Config(t *testing.T) {
 		t.Fatalf("could not determine MemexConfigDir: %v", err)
 	}
 
-	assert.Equal(t, path, os.Getenv(config.EnvMemexConfigDir))
+	assert.Equal(t, path, os.Getenv(config.EnvMemexConfigHome))
 }

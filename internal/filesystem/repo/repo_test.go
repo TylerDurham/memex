@@ -61,9 +61,9 @@ func Test_LoadRepo(t *testing.T) {
 	assert.NoErrorf(t, err, "should not return error")
 
 	assert.Equal(t, expected.Name(), actual.Name())
-	// assert.Equal(t, expected.FileInfo, actual.FileInfo)
-	// assert.Equal(t, expected.AbsPath(), actual.AbsPath())
-	// assert.Equal(t, expected.AppStrategy(), actual.AppStrategy())
+	assert.Equal(t, expected.FileInfo, actual.FileInfo)
+	assert.Equal(t, expected.AbsPath(), actual.AbsPath())
+	assert.Equal(t, expected.AppStrategy(), actual.AppStrategy())
 }
 
 func Test_InitRepo_Errors(t *testing.T) {

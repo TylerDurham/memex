@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 var ErrRequiredConfigMissing = errors.New("missing required configuration value")
 
-// EnvMemexConfigDir is the environment variable that overrides the default config directory.
-const EnvMemexConfigDir = "MEMEX_CONFIG_DIR"
+// EnvMemexConfigHome is the environment variable that overrides the default config directory.
+const EnvMemexConfigHome = "MEMEX_CONFIG_DIR"
 const EnvMemexAppStrategy = "MEMEX_APP_STRATEGY"
+const EnvXdgConfigHome = "XDG_CONFIG_HOME"
 
 type RepoConfig struct {
 	AbsPath  string
@@ -25,19 +27,27 @@ type MemexConfig struct {
 
 func Load() (*MemexConfig, error) {
 	var envl envLoader
+
+	cp, err := getConfigDir(envl)
+	if err != nil {
+		return nil, err
+	}
+
 	cfg := &MemexConfig{}
-	cfg.AbsPath = envl.required(EnvMemexConfigDir)
+
+	cfg.AbsPath = filepath.Join(cp, "memex")
 
 	// set up repo configuration
 	cfg.Repo = RepoConfig{
 		// should be ~/.config.memex/repos
-		AbsPath: filepath.Join(cfg.AbsPath, "repos"),
+		AbsPath:  filepath.Join(cfg.AbsPath, "repos"),
 		Strategy: envl.str(EnvMemexAppStrategy, "obsidian"),
 	}
 
 	if err := errors.Join(envl.errs...); err != nil {
 		return nil, err
 	}
+
 
 	return cfg, nil
 }
@@ -61,4 +71,32 @@ func (l *envLoader) str(key string, def string) string {
 	}
 
 	return def
+}
+
+// getConfigDir figures out where the user's config directory lives. It tries to get from
+// the environment variable [EnvMemexConfigHome] first
+func getConfigDir(envl envLoader) (string, error) {
+
+	if dir := envl.str(EnvMemexConfigHome, ""); dir != "" {
+		return dir, nil
+	}
+
+	if runtime.GOOS == "windows" {
+		win, err := os.UserConfigDir()
+		if err != nil {
+			return "", err
+		}
+		return filepath.Join(win, "memex"), nil
+	}
+
+	// The XDG spec says relative paths must be ignored.
+	if xdg := envl.str(EnvXdgConfigHome, ""); filepath.IsAbs(xdg) {
+		return filepath.Join(xdg, "memex"), nil
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, ".config", "memex"), nil
 }
