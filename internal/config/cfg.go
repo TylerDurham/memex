@@ -35,7 +35,7 @@ func Load() (*MemexConfig, error) {
 
 	cfg := &MemexConfig{}
 
-	cfg.AbsPath = filepath.Join(cp, "memex")
+	cfg.AbsPath = cp
 
 	// set up repo configuration
 	cfg.Repo = RepoConfig{
@@ -47,7 +47,6 @@ func Load() (*MemexConfig, error) {
 	if err := errors.Join(envl.errs...); err != nil {
 		return nil, err
 	}
-
 
 	return cfg, nil
 }
